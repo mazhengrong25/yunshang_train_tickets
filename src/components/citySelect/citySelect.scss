@@ -1,0 +1,138 @@
+.content_list {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  width: 100%;
+  .list_item {
+    flex: 1;
+    .item_title {
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 400;
+      color: #333333;
+    }
+    .item_input {
+      .ant-picker {
+        width: 100%;
+        height: 38px;
+      }
+    }
+  }
+  .city_select {
+    position: relative;
+    .ant-select {
+      width: 100%;
+      .ant-select-selector {
+        height: 38px !important;
+        input {
+          height: 38px !important;
+        }
+        .ant-select-selection-item {
+          line-height: 38px;
+        }
+        .ant-select-selection-placeholder {
+          line-height: 38px;
+        }
+      }
+    }
+
+    // 城市弹窗
+    .city_list_modal {
+      .ant-popover-arrow {
+        display: none;
+      }
+      .ant-popover-inner-content {
+        .modal_title {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 25px;
+          span {
+            color: gray;
+            font-size: 12px;
+          }
+          .clear_modal {
+            cursor: pointer;
+            width: 25px;
+            height: 25px;
+            background: url("../../static/clear_btn.png") no-repeat center center;
+            background-size: 16px 16px;
+          }
+        }
+        .modal_city {
+          .ant-tabs-content {
+            .ant-tabs-tabpane {
+              min-width: 620px;
+              display: flex;
+              flex-direction: column;
+              &:not(:first-child) {
+                min-height: 334px;
+              }
+            }
+          }
+
+          .city_box {
+            display: flex;
+            width: 620px;
+            .city_unit {
+              width: 10px;
+              height: 30px;
+              line-height: 30px;
+              color: #1890ff;
+              margin-right: 10px;
+              flex-shrink: 0;
+            }
+            .city_list {
+              flex: 1;
+              .list_item {
+                display: inline-block;
+                font-size: 12px;
+                width: 90px;
+                height: 30px;
+                line-height: 30px;
+                cursor: pointer;
+                margin-right: 10px;
+                padding-left: 5px;
+                &:hover {
+                  background-color: #f2f2f2;
+                }
+                border-radius: 4px;
+                -webkit-border-radius: 4px;
+                -moz-border-radius: 4px;
+                -ms-border-radius: 4px;
+                -o-border-radius: 4px;
+              }
+            }
+          }
+          .pagination_box {
+            text-align: right;
+            margin-top: auto;
+          }
+        }
+      }
+    }
+  }
+
+  .switch_address_btn {
+    flex-shrink: 0;
+    height: 38px;
+    width: 38px;
+    text-align: center;
+    margin: auto 20px 0;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    box-shadow: none;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    -ms-border-radius: 50%;
+    -o-border-radius: 50%;
+    img {
+      width: 24px;
+      height: 24px;
+      object-fit: contain;
+    }
+  }
+}

@@ -1,17 +1,85 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+/*
+ * @Description: 入口页
+ * @Author: wish.WuJunLong
+ * @Date: 2021-05-06 10:36:06
+ * @LastEditTime: 2021-05-24 11:58:27
+ * @LastEditors: wish.WuJunLong
+ */
+import React from "react";
+import ReactDOM from "react-dom";
+import "./global.scss";
+import App from "./App";
+
+import moment from "moment";
+import "moment/locale/zh-cn";
+
+import axios from "./api/api";
+
+React.Component.prototype.$moment = moment;
+React.Component.prototype.$axios = axios;
+
+// 拆分地址栏参数
+React.$filterUrlParams = (val) => {
+  if (val) {
+    let str = val.replace("?", "");
+    let arr = str.split("&");
+    let obj = {};
+    arr.forEach((e) => {
+      let key = e.split("=");
+      obj[key[0]] = key[1];
+    });
+    return obj;
+  }
+};
+
+//根据身份证，计算年龄
+React.$getAge = (identityCard) => {
+  let len = (identityCard + "").length;
+  if (len === 0) {
+    return 0;
+  } else {
+    if (len !== 15 && len !== 18) {
+      return 0;
+    }
+  }
+  let strBirthday = "";
+  let sex = "";
+  if (len === 18) {
+    strBirthday =
+      identityCard.substr(6, 4) +
+      "-" +
+      identityCard.substr(10, 2) +
+      "-" +
+      identityCard.substr(12, 2);
+    sex = identityCard.substr(16, 1) % 2 === 1 ? "男" : "女";
+  }
+  if (len === 15) {
+    strBirthday =
+      "19" +
+      identityCard.substr(6, 2) +
+      "-" +
+      identityCard.substr(8, 2) +
+      "-" +
+      identityCard.substr(10, 2);
+  }
+
+  let birthDate = new Date(strBirthday);
+  let nowDateTime = new Date();
+  let age = nowDateTime.getFullYear() - birthDate.getFullYear();
+  if (
+    nowDateTime.getMonth() < birthDate.getMonth() ||
+    (nowDateTime.getMonth() === birthDate.getMonth() &&
+      nowDateTime.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+
+  return { age, strBirthday, sex };
+};
 
 ReactDOM.render(
   <React.StrictMode>
     <App />
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("yunShangApp")
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();

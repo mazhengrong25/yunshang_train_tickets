@@ -1,0 +1,32 @@
+/**
+ * 公用样式表
+*/
+@import "~antd/dist/antd.css";
+
+// 全局页面背景及边距
+#yunShangApp {
+  background: #f4f6fa;
+  padding: 16px;
+}
+
+// 基础标签样式配置
+p {
+  margin: unset;
+}
+img {
+  object-fit: contain;
+  image-rendering: -moz-crisp-edges; /* Firefox */
+  image-rendering: -o-crisp-edges; /* Opera */
+  image-rendering: -webkit-optimize-contrast; /*Webkit (non-standard naming) */
+  image-rendering: crisp-edges;
+  -ms-interpolation-mode: nearest-neighbor; /* IE (non-standard property) */
+}
+
+// ui框架样式替换
+.ant-select {
+  &:not(.ant-select-customize-input) {
+    .ant-select-selector {
+      border-color: #eaeaea;
+    }
+  }
+}

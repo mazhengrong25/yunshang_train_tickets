@@ -1,0 +1,96 @@
+.via_stop_popover {
+  padding-top: 0;
+  .ant-popover-arrow {
+    display: none;
+  }
+  .ant-popover-inner-content {
+    padding: 0;
+  }
+  .via_stop_main {
+    width: 448px;
+    padding: 18px 8px 8px 13px;
+    .via_stop_title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      p {
+        font-size: 14px;
+        font-weight: bold;
+        color: #000000;
+      }
+      span {
+        cursor: pointer;
+        display: inline-block;
+        width: 22px;
+        height: 22px;
+        background: url("../../static/clear_btn.png") no-repeat center center;
+        background-size: 14px 14px;
+        margin-right: 15px;
+      }
+    }
+    .via_stop_table_body {
+      max-height: 170px;
+      overflow-y: auto;
+      padding-right: 10px;
+      &::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+        background-color: #f1f3f5;
+      }
+      &::-webkit-scrollbar-thumb {
+        border-radius: 10px;
+        -webkit-box-shadow: inset 0 0 6px rgba(#d9e1ea, 1);
+        background-color: #d9e1ea;
+      }
+      .ant-table {
+        margin: 0;
+        td.ant-table-cell {
+          padding: 8px 8px;
+        }
+        .ant-table-tbody {
+          tr {
+            td {
+              color: rgba(0, 0, 0, 0.3);
+            }
+            &.startAddress {
+              td {
+                color: #000;
+              }
+              & ~ tr {
+                td {
+                  color: #000;
+                }
+              }
+            }
+            &.endAddress {
+              td {
+                color: #000;
+              }
+              & ~ tr {
+                td {
+                  color: rgba(0, 0, 0, 0.3);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.via_stop {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  span {
+    display: inline-block;
+    width: 10px;
+    height: 5px;
+    margin-left: 3px;
+    background: url("../../static/open_icon.png") no-repeat center center;
+    background-size: contain;
+  }
+}
