@@ -2,7 +2,7 @@
  * @Description: 车票查询
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 11:06:03
- * @LastEditTime: 2021-05-24 14:14:55
+ * @LastEditTime: 2021-05-28 11:38:02
  * @LastEditors: wish.WuJunLong
  */
 
@@ -61,9 +61,14 @@ export default class index extends Component {
       submitLoading: false, // 预定功能加载
     };
   }
-  async componentDidMount() {
+  async componentWillMount() {
     await this.setState({
       ticketMessage: React.$filterUrlParams(decodeURI(this.props.location.search)),
+    });
+    await this.setState({
+      start: this.state.ticketMessage.departure,
+      end: this.state.ticketMessage.arrive,
+      time: this.$moment(this.state.ticketMessage.departure_date),
     });
     await this.getTicketList();
     await this.getDateList();
@@ -365,7 +370,7 @@ export default class index extends Component {
       departure: val.station.departure_name, //类型：String  必有字段  备注：出发站点
       arrive: val.station.arrive_name, //类型：String  必有字段  备注：到达站
       ticket: "ADT", //类型：String  必有字段  备注：票类型
-      departure_date: "2021-05-15", //类型：String  必有字段  备注：出发日期
+      departure_date: this.state.ticketMessage.departure_date, //类型：String  必有字段  备注：出发日期
       code: val.train.code, //类型：String  必有字段  备注：车次
       number: val.train.number, //类型：String  必有字段  备注：列车号
     };
@@ -422,7 +427,11 @@ export default class index extends Component {
     return (
       <div className="ticket_inquiry">
         <div className="search_ticket_header">
-          <CitySelect cityData={this.getCity}></CitySelect>
+          <CitySelect
+            start={this.state.ticketMessage.departure}
+            end={this.state.ticketMessage.arrive}
+            cityData={this.getCity}
+          ></CitySelect>
 
           <div className="content_list">
             <div className="list_item">

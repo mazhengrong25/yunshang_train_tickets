@@ -502,6 +502,29 @@
       border-top: 1px solid #eaeaea;
     }
   }
+  .not_cabin_select {
+    height: 40px;
+    line-height: 40px;
+    background: rgba(#fb9826, 0.15);
+    padding: 0 16px;
+    font-size: 14px;
+    font-weight: 400;
+    color: #fb9826;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      margin-right: 12px;
+    }
+    span {
+      font-size: 14px;
+      font-weight: bold;
+      color: #fb9826;
+    }
+  }
 
   // 联系人信息
   .contact_box {

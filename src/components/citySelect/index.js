@@ -2,7 +2,7 @@
  * @Description: 城市选择组件
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 13:52:05
- * @LastEditTime: 2021-05-24 16:51:57
+ * @LastEditTime: 2021-05-28 11:49:41
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -22,8 +22,8 @@ export default class index extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      cityStartName: null, // 出发
-      cityEndName: null, // 返回
+      cityStartName: props.start, // 出发
+      cityEndName: props.end, // 返回
 
       hotCities: [
         "北京",
@@ -78,6 +78,10 @@ export default class index extends Component {
 
   componentDidMount() {
     this.sortingCityData();
+    this.setState({
+      cityStartName: this.props.start,
+      cityEndName: this.props.end,
+    });
   }
 
   // 组装城市信息
@@ -356,37 +360,35 @@ export default class index extends Component {
                         {this.state.codeCitiesList.map((item, index) => (
                           <TabPane tab={item.code} key={item.code}>
                             {item.data &&
-                              item.data.map((oitem, oindex) => {
-                                if (oitem[this.state.startIndex]) {
-                                  return (
-                                    <div className="city_box" key={oindex}>
-                                      <p className="city_unit">
-                                        {oitem[0] ? oitem[0][0][0].toUpperCase() : ""}
-                                      </p>
-                                      <div className="city_list" key={oindex}>
-                                        {oitem.map((pitem, pindex) => {
-                                          if (
-                                            pindex > this.state.startIndex &&
-                                            pindex < this.state.endIndex
-                                          ) {
-                                            return (
-                                              <div
-                                                onClick={() =>
-                                                  this.checkedCity(pitem, "start")
-                                                }
-                                                className="list_item"
-                                                key={pindex}
-                                              >
-                                                {pitem[1]}
-                                              </div>
-                                            );
-                                          }
-                                        })}
-                                      </div>
+                              item.data.map((oitem, oindex) =>
+                                oitem[this.state.startIndex] ? (
+                                  <div className="city_box" key={oindex}>
+                                    <p className="city_unit">
+                                      {oitem[0] ? oitem[0][0][0].toUpperCase() : ""}
+                                    </p>
+                                    <div className="city_list" key={oindex}>
+                                      {oitem.map((pitem, pindex) =>
+                                        pindex > this.state.startIndex &&
+                                        pindex < this.state.endIndex ? (
+                                          <div
+                                            onClick={() =>
+                                              this.checkedCity(pitem, "start")
+                                            }
+                                            className="list_item"
+                                            key={pindex}
+                                          >
+                                            {pitem[1]}
+                                          </div>
+                                        ) : (
+                                          ""
+                                        )
+                                      )}
                                     </div>
-                                  );
-                                }
-                              })}
+                                  </div>
+                                ) : (
+                                  ""
+                                )
+                              )}
                             <div className="pagination_box">
                               <Button
                                 size="small"
@@ -489,37 +491,33 @@ export default class index extends Component {
                         {this.state.codeCitiesList.map((item, index) => (
                           <TabPane tab={item.code} key={item.code}>
                             {item.data &&
-                              item.data.map((oitem, oindex) => {
-                                if (oitem[this.state.startIndex]) {
-                                  return (
-                                    <div className="city_box" key={oindex}>
-                                      <p className="city_unit">
-                                        {oitem[0] ? oitem[0][0][0].toUpperCase() : ""}
-                                      </p>
-                                      <div className="city_list" key={oindex}>
-                                        {oitem.map((pitem, pindex) => {
-                                          if (
-                                            pindex > this.state.startIndex &&
-                                            pindex < this.state.endIndex
-                                          ) {
-                                            return (
-                                              <div
-                                                onClick={() =>
-                                                  this.checkedCity(pitem, "end")
-                                                }
-                                                className="list_item"
-                                                key={pindex}
-                                              >
-                                                {pitem[1]}
-                                              </div>
-                                            );
-                                          }
-                                        })}
-                                      </div>
+                              item.data.map((oitem, oindex) =>
+                                oitem[this.state.startIndex] ? (
+                                  <div className="city_box" key={oindex}>
+                                    <p className="city_unit">
+                                      {oitem[0] ? oitem[0][0][0].toUpperCase() : ""}
+                                    </p>
+                                    <div className="city_list" key={oindex}>
+                                      {oitem.map((pitem, pindex) =>
+                                        pindex > this.state.startIndex &&
+                                        pindex < this.state.endIndex ? (
+                                          <div
+                                            onClick={() => this.checkedCity(pitem, "end")}
+                                            className="list_item"
+                                            key={pindex}
+                                          >
+                                            {pitem[1]}
+                                          </div>
+                                        ) : (
+                                          ""
+                                        )
+                                      )}
                                     </div>
-                                  );
-                                }
-                              })}
+                                  </div>
+                                ) : (
+                                  ""
+                                )
+                              )}
                             <div className="pagination_box">
                               <Button
                                 size="small"

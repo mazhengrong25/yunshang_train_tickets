@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-05-24 16:06:50
+ * @LastEditTime: 2021-05-28 15:02:49
  * @LastEditors: wish.WuJunLong
  */
 
@@ -27,6 +27,7 @@ import TripIcon from "../../static/trip_icon.png"; // 行程icon
 import AddPassengerIcon from "../../static/add_passenger_btn.png"; // 添加乘客图标
 import RemoveBtnIcon from "../../static/remove_btn.png"; // 删除按钮
 import InsuranceIcon from "../../static/insurance_icon.png"; // 保险图标
+import WraningIcon from "../../static/wran_icon.png";
 
 import "./TicketReservation.scss";
 
@@ -127,8 +128,16 @@ export default class index extends Component {
           }
         }
         console.log(newData);
+
+        let contact = {
+          name: newData.dis_msg.role_name || "",
+          phone: newData.dis_msg.phone || "",
+          mail: newData.dis_msg.mail || "",
+        };
+
         this.setState({
           reservationMessage: newData,
+          contactMessage: contact,
         });
       } else {
         message.warning(res.msg);
@@ -139,7 +148,7 @@ export default class index extends Component {
   // 获取经停站信息
   openViaStopMessage = () => {
     this.setState({
-      viaStopPopover: "",
+      viaStopPopover: 0,
       viaStopData: [],
     });
     let data = {
@@ -159,6 +168,12 @@ export default class index extends Component {
           viaStopPopover: 0,
           viaStopData: res.data,
         });
+      } else {
+        this.setState({
+          viaStopPopover: "",
+          viaStopData: [],
+        });
+        message.warning("经停信息获取失败：" + res.msg);
       }
     });
   };
@@ -183,7 +198,7 @@ export default class index extends Component {
 
   // 获取常用乘客列表
   getPassengerList() {
-    this.$axios.post("/passenger/list", this.state.passengerSearch).then((res) => {
+    this.$axios.post("/train/passenger/list", this.state.passengerSearch).then((res) => {
       if (res.errorcode === 10000) {
         this.setState({
           passengerList: res.data,
@@ -239,7 +254,7 @@ export default class index extends Component {
     let data = {
       limit: 999,
     };
-    this.$axios.post("/pasgroup/list", data).then((res) => {
+    this.$axios.post("/train/pasgroup/list", data).then((res) => {
       if (res.errorcode === 10000) {
         this.setState({
           groupList: res.data.data,
@@ -305,7 +320,18 @@ export default class index extends Component {
       thisPassengerList.unshift(newItem);
     }
 
-    console.log(thisPassengerList);
+    let oneByADT = false;
+    for (let i = 0; i < thisPassengerList.length; i++) {
+      if (thisPassengerList[i] && thisPassengerList[i]["type"] === "ADT") {
+        oneByADT = true;
+        break;
+      }
+    }
+    console.log(oneByADT);
+    if (!oneByADT) {
+      return message.warning("请至少选择一个成人");
+    }
+
     this.setState({
       checkedPassenger: thisPassengerList,
       passengerModal: false,
@@ -414,7 +440,7 @@ export default class index extends Component {
   // 修改选座信息
   editSeatStatus = (index, val) => {
     let data = JSON.parse(JSON.stringify(this.state.checkedPassenger));
-    console.log( data[index]["choose_seat"], val.target.value);
+    console.log(data[index]["choose_seat"], val.target.value);
     data[index]["choose_seat"] =
       data[index]["choose_seat"] === val.target.value ? "" : val.target.value;
     console.log(data[index]["choose_seat"]);
@@ -452,12 +478,11 @@ export default class index extends Component {
     });
   };
 
-  // 创建订单
+  // 创建订单 / 核验乘客信息
   createOrder() {
     let data = this.state.checkedPassenger;
     let contact = this.state.contactMessage;
 
-    console.log(data[0].name, data[0].cert_no, contact.name, contact.phone);
     if (!data[0].name || !data[0].cert_no || !contact.name || !contact.phone) {
       return message.warning("请完善信息后创建订单");
     }
@@ -471,6 +496,34 @@ export default class index extends Component {
       }
     }
 
+    // console.log(data);
+
+    // let checkData;
+    // let checkList = [];
+    // data.forEach((item) => {
+    //   if (item.type === "ADT") {
+    //     checkList.push({
+    //       name: item.name, //类型：String  必有字段  备注：姓名
+    //       card_no: item.cert_no, //类型：String  必有字段  备注：证件号
+    //       card_type: 1, //类型：Number  必有字段  备注：证件类型
+    //       card_name: "中国居民身份证", //类型：String  必有字段  备注：证件名字
+    //       phone: item.phone, //类型：String  必有字段  备注：无
+    //       ticket_type: 1, //类型：Number  必有字段  备注：票类型
+    //     });
+    //   }
+    // });
+
+    // checkData = {
+    //   channel: "Di", //类型：String  必有字段  备注：渠道
+    //   source: "YunKu", //类型：String  必有字段  备注：来源
+    //   passenger: checkList,
+    // };
+
+    // this.$axios.post('train/passenger/check',checkData)
+    //   .then(res => {
+    //     console.log(res)
+    //   })
+
     this.getInsuranceList();
 
     this.setState({
@@ -481,7 +534,10 @@ export default class index extends Component {
 
   // 获取保险列表
   getInsuranceList() {
-    this.$axios.get("/train/insurance/list").then((res) => {
+    let data = {
+      is_train: 1,
+    };
+    this.$axios.get("/train/insurance/list", { params: data }).then((res) => {
       if (res.errorcode === 10000) {
         let thisId = "";
         if (res.data.length > 0) {
@@ -587,7 +643,7 @@ export default class index extends Component {
         price: this.state.reservationMessage.seat.price, //类型：String  必有字段  备注：座位价格
         ticket_type: item.type === "ADT" ? "1" : item.type === "CHD" ? "2" : "", //类型：String  必有字段  备注：票类型
         phone: item.phone, //类型：String  必有字段  备注：手机号
-        is_insurance: item.insurance ? 0 : 1, //类型：Number  必有字段  备注：是否购买保险
+        is_insurance: item.insurance ? 1 : 0, //类型：Number  必有字段  备注：是否购买保险
         school: {
           //类型：Object  可有字段  备注：学校信息，默认为空。如果是学生票则必须
           // province_name: "", //类型：String  可有字段  备注：省份，可为空
@@ -609,7 +665,7 @@ export default class index extends Component {
     });
     let data = {
       source: "YunKu", // 数据源
-      insurance_id: 0, // 保险ID
+      insurance_id: Number(this.state.selectInsurance), // 保险ID
       order: {
         standing: this.state.standing, //类型：Boolean  必有字段  备注：是否接受站票，默认否
         is_choose_seat: false, //类型：Boolean  必有字段  备注：是否选座，默认否
@@ -620,14 +676,16 @@ export default class index extends Component {
         departure: this.state.reservationMessage.station.departure_name, //类型：String  必有字段  备注：出发地
         arrive: this.state.reservationMessage.station.arrive_name, //类型：String  必有字段  备注：到达地
         code: this.state.reservationMessage.train.code, //类型：String  必有字段  备注：车次
-        departure_date: this.$moment(
+        number: this.state.reservationMessage.train.number,
+        departure_date: `${this.$moment(
           this.state.reservationMessage.train.departure_date
-        ).format("YYYY-MM-DD"), //类型：String  必有字段  备注：出发日期
-        arrive_date: this.$moment(this.state.reservationMessage.train.departure_date)
+        ).format("YYYY-MM-DD")} ${this.state.reservationMessage.train.departure}`, //类型：String  必有字段  备注：出发日期
+        arrive_date: `${this.$moment(this.state.reservationMessage.train.departure_date)
           .add(this.state.reservationMessage.train.days, "days")
-          .format("YYYY-MM-DD"), //类型：String  必有字段  备注：到达日期
+          .format("YYYY-MM-DD")} ${this.state.reservationMessage.train.arrive}`, //类型：String  必有字段  备注：到达日期
         seat_number: "", //类型：String  必有字段  备注：座位号
         travel_time: this.state.reservationMessage.train.run_minute, //类型：String  必有字段  备注：行程时长
+        seat: this.state.reservationMessage.seat.name, //类型：String  必有字段  备注：座位等级中文
         seat_level: this.state.reservationMessage.seat.code, //类型：String  必有字段  备注：座位等级
         train_level: this.state.reservationMessage.train.type, //类型：String  必有字段  备注：火车类型
       },
@@ -640,10 +698,10 @@ export default class index extends Component {
       this.setState({
         submitStatus: false,
       });
-      if (res) {
-        message.success("订单创建成功：" + res.order.order_no);
+      if (res.code === 0) {
+        this.props.history.push({ pathname: "/orderDetail/" + res.data.order.order_no });
       } else {
-        message.warning("订单创建失败，请重试");
+        message.warning(res.msg || "订单创建失败，请重试");
       }
     });
   }
@@ -1231,7 +1289,8 @@ export default class index extends Component {
         {/* 在线选座 */}
         {this.state.createOrderStatus ? (
           ""
-        ) : (
+        ) : this.state.reservationMessage.train &&
+          this.state.reservationMessage.train.type === "G" ? (
           <div className="ticket_card cabin_info">
             <div className="title">
               <p className="title_name">在线选座</p>
@@ -1298,6 +1357,12 @@ export default class index extends Component {
             <div className="cabin_message">
               系统将优先为您选择所选座位，无座时将安排其它座位
             </div>
+          </div>
+        ) : (
+          <div className="not_cabin_select">
+            <img src={WraningIcon} alt="警告图标"></img>
+            <span>温馨提示：</span>
+            卧铺价格暂显示下铺全价，网上购票铺位随机，实际以占座后铺位价格为准，如有差价则1-3工作日原路退回
           </div>
         )}
 

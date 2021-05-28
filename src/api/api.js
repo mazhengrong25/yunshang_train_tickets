@@ -2,11 +2,25 @@
  * @Description: axios封装
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 10:51:06
- * @LastEditTime: 2021-05-12 16:20:43
+ * @LastEditTime: 2021-05-25 14:00:48
  * @LastEditors: wish.WuJunLong
  */
 
 import axios from "axios";
+
+import { Modal } from "antd";
+// axios.defaults.baseURL = "http://192.168.0.187";
+
+let httpCode = {
+  400: "请求参数错误",
+  401: "权限不足, 请重新登录",
+  403: "服务器拒绝本次访问",
+  404: "请求资源未找到",
+  500: "后台服务器数据错误，请联系管理员",
+  501: "服务器不支持该请求中使用的方法",
+  502: "网关错误",
+  504: "网关超时",
+};
 
 // 创建axios实例
 const service = axios.create({
@@ -46,21 +60,34 @@ service.interceptors.request.use(
 // response拦截器
 service.interceptors.response.use(
   (response) => {
+    if (typeof response.data === "string") {
+      Modal.destroyAll();
+      return Modal.info({
+        title: "警告",
+        content: "权限失效，请重新登陆",
+      });
+    }
     return response.data;
   },
 
   (error) => {
     if (error && error.response) {
-      switch (error.response.status) {
-        case 400:
-          error.message = "请求错误";
-          break;
-        case 401:
-          error.message = "未授权访问";
-          break;
-        default:
-          break;
+      let tips =
+        error.response.status in httpCode
+          ? httpCode[error.response.status]
+          : error.response.data.message;
+
+      Modal.destroyAll();
+      Modal.info({
+        title: "警告",
+        content: tips,
+      });
+
+      if (error.response.status === 401) {
+        //针对框架跳转到登陆页面
+        // this.props.history.push("/");
       }
+      return Promise.reject(error);
     }
     return Promise.reject(error);
   }
