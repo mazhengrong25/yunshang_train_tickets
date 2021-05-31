@@ -331,13 +331,13 @@ export default class index extends Component {
                     style={{
                       color:
                         text === 1
-                          ? "#0070E2"
+                          ? "#FB9826"
                           : text === 2
                           ? "#FF0000"
                           : text === 3
                           ? "#5AB957"
                           : text === 4
-                          ? "#333333"
+                          ? "#0070E2"
                           : text === 5
                           ? "#333333"
                           : text === 6

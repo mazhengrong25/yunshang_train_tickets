@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-05-26 18:07:25
+ * @LastEditTime: 2021-05-31 11:30:28
  * @LastEditors: wish.WuJunLong
  */
 
@@ -136,13 +136,13 @@ export default class index extends Component {
                   style={{
                     color:
                       this.state.detailData.status === 1
-                        ? "#0070E2"
+                        ? "#FB9826"
                         : this.state.detailData.status === 2
                         ? "#FF0000"
                         : this.state.detailData.status === 3
                         ? "#5AB957"
                         : this.state.detailData.status === 4
-                        ? "#333333"
+                        ? "#0070E2"
                         : this.state.detailData.status === 5
                         ? "#333333"
                         : this.state.detailData.status === 6
@@ -237,10 +237,12 @@ export default class index extends Component {
             </div>
 
             <div className="info_date">
-              {this.state.detailData.created_at
-                ? `${this.$moment(this.state.detailData.created_at).format(
-                    "YYYY-MM-DD"
-                  )}（${this.$moment(this.state.detailData.created_at).format("ddd")}）`
+              {this.state.detailData.segments
+                ? `${this.$moment(
+                    this.state.detailData.segments[0].departure_time
+                  ).format("YYYY-MM-DD")}（${this.$moment(
+                    this.state.detailData.segments[0].departure_time
+                  ).format("ddd")}）`
                 : "-"}
             </div>
 

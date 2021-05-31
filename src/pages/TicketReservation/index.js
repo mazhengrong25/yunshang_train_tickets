@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-05-28 15:02:49
+ * @LastEditTime: 2021-05-31 11:19:48
  * @LastEditors: wish.WuJunLong
  */
 
@@ -27,7 +27,7 @@ import TripIcon from "../../static/trip_icon.png"; // 行程icon
 import AddPassengerIcon from "../../static/add_passenger_btn.png"; // 添加乘客图标
 import RemoveBtnIcon from "../../static/remove_btn.png"; // 删除按钮
 import InsuranceIcon from "../../static/insurance_icon.png"; // 保险图标
-import WraningIcon from "../../static/wran_icon.png";
+import WarningIcon from "../../static/warn_icon.png";
 
 import "./TicketReservation.scss";
 
@@ -90,6 +90,7 @@ export default class index extends Component {
         mail: "",
       },
 
+      passengerCheckStatus: false, // 校验乘客
       createOrderStatus: false, // 创建订单
 
       insuranceList: [], // 保险列表
@@ -496,39 +497,50 @@ export default class index extends Component {
       }
     }
 
-    // console.log(data);
-
-    // let checkData;
-    // let checkList = [];
-    // data.forEach((item) => {
-    //   if (item.type === "ADT") {
-    //     checkList.push({
-    //       name: item.name, //类型：String  必有字段  备注：姓名
-    //       card_no: item.cert_no, //类型：String  必有字段  备注：证件号
-    //       card_type: 1, //类型：Number  必有字段  备注：证件类型
-    //       card_name: "中国居民身份证", //类型：String  必有字段  备注：证件名字
-    //       phone: item.phone, //类型：String  必有字段  备注：无
-    //       ticket_type: 1, //类型：Number  必有字段  备注：票类型
-    //     });
-    //   }
-    // });
-
-    // checkData = {
-    //   channel: "Di", //类型：String  必有字段  备注：渠道
-    //   source: "YunKu", //类型：String  必有字段  备注：来源
-    //   passenger: checkList,
-    // };
-
-    // this.$axios.post('train/passenger/check',checkData)
-    //   .then(res => {
-    //     console.log(res)
-    //   })
-
-    this.getInsuranceList();
+    console.log(newData)
 
     this.setState({
-      checkedPassenger: newData,
-      createOrderStatus: true,
+      passengerCheckStatus: true
+    })
+    message.info('乘客信息校验中，请稍等')
+
+
+    let checkData;
+    let checkList = [];
+    data.forEach((item) => {
+      if (item.type === "ADT") {
+        checkList.push({
+          name: item.name, //类型：String  必有字段  备注：姓名
+          card_no: item.cert_no, //类型：String  必有字段  备注：证件号
+          card_type: 1, //类型：Number  必有字段  备注：证件类型
+          card_name: "中国居民身份证", //类型：String  必有字段  备注：证件名字
+          phone: item.phone, //类型：String  必有字段  备注：无
+          ticket_type: 1, //类型：Number  必有字段  备注：票类型
+        });
+      }
+    });
+
+    checkData = {
+      channel: "Di", //类型：String  必有字段  备注：渠道
+      source: "YunKu", //类型：String  必有字段  备注：来源
+      passenger: checkList,
+    };
+
+    this.$axios.post("train/passenger/check", checkData).then((res) => {
+      this.setState({
+        passengerCheckStatus: false
+      })
+      if (res.code === 0) {
+        message.success(res.data)
+        this.getInsuranceList();
+
+        this.setState({
+          checkedPassenger: newData,
+          createOrderStatus: true,
+        });
+      }else {
+
+      }
     });
   }
 
@@ -1360,7 +1372,7 @@ export default class index extends Component {
           </div>
         ) : (
           <div className="not_cabin_select">
-            <img src={WraningIcon} alt="警告图标"></img>
+            <img src={WarningIcon} alt="警告图标"></img>
             <span>温馨提示：</span>
             卧铺价格暂显示下铺全价，网上购票铺位随机，实际以占座后铺位价格为准，如有差价则1-3工作日原路退回
           </div>
@@ -1564,10 +1576,10 @@ export default class index extends Component {
           </div>
         ) : (
           <div className="submit_box">
-            <Button onClick={() => this.props.history.goBack()}>重选班次</Button>
+            <Button loading={this.state.passengerCheckStatus} onClick={() => this.props.history.goBack()}>重选班次</Button>
 
-            <Button type="primary" onClick={() => this.createOrder()}>
-              提交订单
+            <Button loading={this.state.passengerCheckStatus} type="primary" onClick={() => this.createOrder()}>
+              {this.state.passengerCheckStatus?'校验中':'提交订单'}
             </Button>
           </div>
         )}
