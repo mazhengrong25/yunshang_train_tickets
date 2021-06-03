@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-05-31 11:19:48
+ * @LastEditTime: 2021-06-03 11:23:01
  * @LastEditors: wish.WuJunLong
  */
 
@@ -19,6 +19,7 @@ import {
   Pagination,
   Radio,
   Switch,
+  Spin,
 } from "antd";
 
 import ViaStopPopover from "../../components/viaStopPopover"; // 经停站组件
@@ -44,6 +45,7 @@ const newPassenger = {
   id: "", // 乘客ID
   phone: "", // 手机号
   choose_seat: "", // 选座内容
+  verify_status: 0, // 待核验
 };
 const newChild = {
   // 儿童数据
@@ -92,6 +94,10 @@ export default class index extends Component {
 
       passengerCheckStatus: false, // 校验乘客
       createOrderStatus: false, // 创建订单
+
+      isPassengerCheck: false, // 乘机人核验弹窗
+      isPassengerCheckStatus: false, // 核验状态
+      isPassengerCheckMessage: {}, // 核验人数据
 
       insuranceList: [], // 保险列表
       selectInsurance: "", // 已选择保险ID
@@ -199,7 +205,9 @@ export default class index extends Component {
 
   // 获取常用乘客列表
   getPassengerList() {
-    this.$axios.post("/train/passenger/list", this.state.passengerSearch).then((res) => {
+    let data = this.state.passengerSearch;
+    data["passenger_type"] = "ADT";
+    this.$axios.post("/train/passenger/list", data).then((res) => {
       if (res.errorcode === 10000) {
         this.setState({
           passengerList: res.data,
@@ -267,8 +275,129 @@ export default class index extends Component {
   }
 
   // 乘客信息核验
-  passengerVerify(val) {
+  passengerVerify(val, type) {
+    // 判断乘客是否已经经行校验
+    if (type) {
+      // 已校验 直接打开弹窗
+      val["is_passenger_list"] = true;
+      this.setState({
+        isPassengerCheck: true,
+        isPassengerCheckMessage: val,
+        isPassengerCheckStatus: false,
+      });
+    } else {
+      // 未校验 进行校验步骤
+      if (React.$getAge(val.cert_no).age < 14) {
+        console.log(val);
+        return false;
+      }
+      val["type"] = "ADT";
+      this.setState({
+        isPassengerCheckStatus: true,
+        isPassengerCheck: true,
+        isPassengerCheckMessage: val,
+      });
+
+      this.passengerCheckData([val]).then((res) => {
+        if (res.code === 0) {
+          let data = this.state.checkedPassenger;
+          data.forEach((item) => {
+            if (item.name === this.state.isPassengerCheckMessage.name) {
+              item.verify_status = 1;
+            }
+          });
+          console.log(data);
+          this.setState({
+            checkedPassenger: data,
+          });
+          this.setState({
+            isPassengerCheckStatus: false,
+            isPassengerCheck: false,
+            isPassengerCheckMessage: {},
+          });
+          this.getPassengerList();
+
+          message.success(res.data);
+        } else {
+          val["status"] = res.data.status;
+          val["captcha"] = res.data.captcha;
+          this.setState({
+            isPassengerCheckMessage: val,
+            isPassengerCheckStatus: false,
+          });
+        }
+      });
+    }
+
     console.log(val);
+  }
+
+  // 重新查询核验信息
+  reloadVerify() {
+    this.setState({
+      isPassengerCheckStatus: true,
+    });
+    this.passengerCheckData([this.state.isPassengerCheckMessage]).then((res) => {
+      if (res.code === 0) {
+        this.getPassengerList();
+        if (this.state.isPassengerCheckMessage.is_passenger_list) {
+          let data = this.state.checkedPassenger;
+          for (let i = 0; i < data.length; i++) {
+            if (data[i] === this.state.isPassengerCheckMessage.name) {
+              return data[i].verify_status === 1;
+            }
+          }
+          console.log(data);
+          this.setState({
+            checkedPassenger: data,
+          });
+        }
+        this.setState({
+          isPassengerCheckStatus: false,
+          isPassengerCheck: false,
+          isPassengerCheckMessage: {},
+        });
+      } else {
+        this.setState({
+          isPassengerCheckStatus: false,
+          isPassengerCheckMessage: res.data,
+        });
+      }
+    });
+
+    // let newData = {
+    //   channel: "Di", //类型：String  必有字段  备注：渠道
+    //   source: "Yunkun", //类型：String  必有字段  备注：数据源
+    //   passenger: [
+    //     {
+    //       phone: this.state.isPassengerCheckMessage.phone, //类型：String  必有字段  备注：手机
+    //       card_no: this.state.isPassengerCheckMessage.cert_no, //类型：String  必有字段  备注：证件号
+    //       name: this.state.isPassengerCheckMessage.name, //类型：String  必有字段  备注：姓名
+    //     },
+    //   ],
+    // };
+    // this.$axios.post("/train/passenger/verf", newData).then((res) => {
+    //   if (res.code === 0) {
+    //     this.setState({
+    //       isPassengerCheckStatus: false,
+    //       isPassengerCheck: false,
+    //       isPassengerCheckMessage: {},
+    //     });
+    //     this.getPassengerList();
+    //     if (this.state.isPassengerCheckMessage.is_passenger_list) {
+    //       let data = this.state.checkedPassenger;
+    //       for (let i = 0; i < data.length; i++) {
+    //         if (data[i] === this.state.isPassengerCheckMessage.name) {
+    //           return data[i].verify_status === 1;
+    //         }
+    //       }
+    //       console.log(data);
+    //       this.setState({
+    //         checkedPassenger: data,
+    //       });
+    //     }
+    //   }
+    // });
   }
 
   // 乘客列表分页
@@ -295,7 +424,7 @@ export default class index extends Component {
       }
     });
     thisPassengerList.forEach((item) => {
-      if (React.$getAge(item.cert_no).age >= 18) {
+      if (React.$getAge(item.cert_no).age >= 14) {
         item["type"] = "ADT";
         item["choose_seat"] = "";
       } else {
@@ -497,14 +626,69 @@ export default class index extends Component {
       }
     }
 
-    console.log(newData)
+    let isPassengerStatus = false;
+    for (let i = 0; i < newData.length; i++) {
+      if (newData[i].verify_status !== 1) {
+        isPassengerStatus = true;
+        break;
+      }
+    }
 
-    this.setState({
-      passengerCheckStatus: true
-    })
-    message.info('乘客信息校验中，请稍等')
+    // 判断乘客列表是否有未核验人员
+    if (isPassengerStatus) {
+      // 未核验，经行核验操作
+      this.setState({
+        passengerCheckStatus: true,
+      });
 
+      // 提取未核验人员
+      let checkPassenger = [];
+      for (let i = 0; i < newData.length; i++) {
+        if (newData[i].verify_status !== 1) {
+          checkPassenger.push(newData[i]);
+        }
+      }
 
+      message.info("乘客信息校验中，请稍等");
+
+      this.passengerCheckData(checkPassenger).then((res) => {
+        this.setState({
+          passengerCheckStatus: false,
+        });
+        if (res.code === 0) {
+          message.success(res.data);
+          this.getInsuranceList();
+
+          this.setState({
+            checkedPassenger: newData,
+            createOrderStatus: true,
+          });
+        } else {
+          message.warning(`${res.msg}：${res.data.name} ${res.data.status}`);
+          let verifyData;
+          for (let i = 0; i < checkPassenger.length; i++) {
+            if (checkPassenger[i].name === res.data.name) {
+              verifyData = checkPassenger[i];
+              break;
+            }
+          }
+          verifyData["status"] = res.data.status;
+          verifyData["captcha"] = res.data.captcha;
+          this.passengerVerify(verifyData, true);
+        }
+      });
+    } else {
+      // 已核验，直接进入下一步
+      this.getInsuranceList();
+      this.setState({
+        checkedPassenger: newData,
+        createOrderStatus: true,
+      });
+    }
+  }
+
+  // 乘客核验
+  passengerCheckData(data) {
     let checkData;
     let checkList = [];
     data.forEach((item) => {
@@ -526,21 +710,8 @@ export default class index extends Component {
       passenger: checkList,
     };
 
-    this.$axios.post("train/passenger/check", checkData).then((res) => {
-      this.setState({
-        passengerCheckStatus: false
-      })
-      if (res.code === 0) {
-        message.success(res.data)
-        this.getInsuranceList();
-
-        this.setState({
-          checkedPassenger: newData,
-          createOrderStatus: true,
-        });
-      }else {
-
-      }
+    return this.$axios.post("train/passenger/check", checkData).then((res) => {
+      return res;
     });
   }
 
@@ -1064,32 +1235,34 @@ export default class index extends Component {
                         />
                         <Column
                           title="状态"
-                          dataIndex="group_id"
-                          render={(text, render) => (
-                            <span
-                              onClick={() => this.passengerVerify(render)}
-                              style={{
-                                color: text !== 1 ? "#FB9826" : "#333",
-                                cursor: text !== 1 ? "pointer" : "auto",
-                              }}
-                            >
-                              {text === 0
-                                ? "待核验"
-                                : text === 1
-                                ? "已通过"
-                                : text === 2
-                                ? "手机号/邮箱待核验"
-                                : text === -1
-                                ? "未通过"
-                                : text === -2
-                                ? "冒用"
-                                : text === -3
-                                ? "请报验"
-                                : text === -10
-                                ? "未知"
-                                : "待核验"}
-                            </span>
-                          )}
+                          dataIndex="verify_status"
+                          render={(text, render) => {
+                            return text === 1 ? (
+                              <span>正常</span>
+                            ) : (
+                              <span
+                                onClick={() => this.passengerVerify(render)}
+                                style={{
+                                  color: text !== 1 ? "#FB9826" : "#333",
+                                  cursor: text !== 1 ? "pointer" : "auto",
+                                }}
+                              >
+                                {text === 0
+                                  ? "待核验"
+                                  : text === 2
+                                  ? "手机号/邮箱待核验"
+                                  : text === -1
+                                  ? "未通过"
+                                  : text === -2
+                                  ? "冒用"
+                                  : text === -3
+                                  ? "请报验"
+                                  : text === -10
+                                  ? "未知"
+                                  : "待核验"}
+                              </span>
+                            );
+                          }}
                         />
                       </Table>
                       <Pagination
@@ -1156,6 +1329,19 @@ export default class index extends Component {
                           ></Input>
                         </div>
                       </div>
+
+                      {item.verify_status !== 1 ? (
+                        <Button
+                          className="is_verify_status"
+                          type="link"
+                          size="small"
+                          onClick={() => this.passengerVerify(item)}
+                        >
+                          待核验
+                        </Button>
+                      ) : (
+                        ""
+                      )}
 
                       <Button className="add_child" onClick={() => this.addChild(index)}>
                         + 同行儿童
@@ -1302,7 +1488,8 @@ export default class index extends Component {
         {this.state.createOrderStatus ? (
           ""
         ) : this.state.reservationMessage.train &&
-          this.state.reservationMessage.train.type === "G" ? (
+          (this.state.reservationMessage.train.type === "G" ||
+            this.state.reservationMessage.train.type === "D") ? (
           <div className="ticket_card cabin_info">
             <div className="title">
               <p className="title_name">在线选座</p>
@@ -1576,13 +1763,110 @@ export default class index extends Component {
           </div>
         ) : (
           <div className="submit_box">
-            <Button loading={this.state.passengerCheckStatus} onClick={() => this.props.history.goBack()}>重选班次</Button>
+            <Button
+              loading={this.state.passengerCheckStatus}
+              onClick={() => this.props.history.goBack()}
+            >
+              重选班次
+            </Button>
 
-            <Button loading={this.state.passengerCheckStatus} type="primary" onClick={() => this.createOrder()}>
-              {this.state.passengerCheckStatus?'校验中':'提交订单'}
+            <Button
+              loading={this.state.passengerCheckStatus}
+              type="primary"
+              onClick={() => this.createOrder()}
+            >
+              {this.state.passengerCheckStatus ? "校验中" : "提交订单"}
             </Button>
           </div>
         )}
+
+        {/* 乘机人核验 */}
+        <Modal
+          title="乘机人核验"
+          footer={false}
+          width={712}
+          centered
+          visible={this.state.isPassengerCheck}
+          wrapClassName="is_passenger_check"
+          keyboard={!this.state.isPassengerCheckStatus}
+          maskClosable={!this.state.isPassengerCheckStatus}
+          closable={!this.state.isPassengerCheckStatus}
+          onCancel={() =>
+            this.setState({
+              isPassengerCheck: false,
+            })
+          }
+        >
+          <div className="check_title">
+            <h3>乘车人联系方式需要核验</h3>
+            <p>根据铁路局规定，乘车人手机号核验通过后才可购票</p>
+          </div>
+
+          <div className="check_main">
+            {this.state.isPassengerCheckStatus ? (
+              <Spin tip="正在经行乘客信息核验，请稍等..."></Spin>
+            ) : (
+              <>
+                <p>请按照以下方式进行手机核验：</p>
+                <p className="passenger_info">
+                  请通知乘车人<span>{this.state.isPassengerCheckMessage.name}</span>
+                  ，使用手机号<span>{this.state.isPassengerCheckMessage.phone}</span>
+                  ，在30分钟内短信发送以下核验码到12306
+                </p>
+                <p className="code">
+                  核验码：
+                  <span>
+                    {this.state.isPassengerCheckMessage.captcha || "未获取到验证码"}
+                  </span>
+                  <Button
+                    type="link"
+                    size="small"
+                    onClick={() =>
+                      this.passengerVerify(this.state.isPassengerCheckMessage)
+                    }
+                  >
+                    刷新验证码
+                  </Button>
+                </p>
+              </>
+            )}
+          </div>
+
+          <div className="check_status">
+            核验状态：
+            <span>
+              {this.state.isPassengerCheckMessage.status
+                ? this.state.isPassengerCheckMessage.status
+                : this.state.isPassengerCheckMessage.verify_status === 0
+                ? "待核验"
+                : this.state.isPassengerCheckMessage.verify_status === 2
+                ? "手机号/邮箱待核验"
+                : this.state.isPassengerCheckMessage.verify_status === -1
+                ? "未通过"
+                : this.state.isPassengerCheckMessage.verify_status === -2
+                ? "冒用"
+                : this.state.isPassengerCheckMessage.verify_status === -3
+                ? "请报验"
+                : this.state.isPassengerCheckMessage.verify_status === -10
+                ? "未知"
+                : "待核验"}
+            </span>
+          </div>
+
+          {this.state.isPassengerCheckStatus ? (
+            ""
+          ) : (
+            <div className="reload_passenger_status">
+              <Button
+                className="reload_btn"
+                type="primary"
+                onClick={() => this.reloadVerify()}
+              >
+                已发送验证码，刷新结果
+              </Button>
+            </div>
+          )}
+        </Modal>
       </div>
     );
   }

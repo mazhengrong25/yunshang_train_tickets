@@ -42,5 +42,8 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://192.168.0.187"
+  "proxy": "http://192.168.0.187",
+  "devDependencies": {
+    "uglifyjs-webpack-plugin": "^2.2.0"
+  }
 }
