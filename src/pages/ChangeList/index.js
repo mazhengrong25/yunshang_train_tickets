@@ -1,8 +1,8 @@
 /*
- * @Description: 订单列表
+ * @Description: 改签列表
  * @Author: wish.WuJunLong
- * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-06-18 16:11:12
+ * @Date: 2021-06-08 09:26:48
+ * @LastEditTime: 2021-06-08 11:27:23
  * @LastEditors: wish.WuJunLong
  */
 
@@ -10,9 +10,7 @@ import React, { Component } from "react";
 
 import { Button, Pagination, Table, Popover, message } from "antd";
 
-import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
-
-import "./OrderList.scss";
+import "./ChangeList.scss";
 
 import { Base64 } from "js-base64";
 
@@ -22,59 +20,46 @@ export default class index extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      orderStatusList: ["全部", "占座中", "待支付", "待出票", "已取消"],
+      orderStatusList: ["全部","待支付", "改签中", "已改签",'已取消'],
       orderStatusActive: "全部",
       orderNumberData: {}, // 订单状态数量
       orderList: [], // 订单列表
-      tableLoading: false, // 订单表格加载
+
       orderSearch: {
-        channel: "1", //类型：String  必有字段  备注：渠道1 web 2 miniapp 3 wechat
+        dis_id: "", //类型：Number  必有字段  备注：分销商
         order_no: "", //类型：String  必有字段  备注：订单号
-        out_trade_no: "", //类型：String  必有字段  备注：外部订单号
-        ticket_number: "", //类型：String  必有字段  备注：取票号（电子单号）
-        from_station: "", //类型：String  必有字段  备注：出发
-        to_station: "", //类型：String  必有字段  备注：到达
+        ticket_number: "", //类型：String  必有字段  备注：票号
+        from_station: "", //类型：String  必有字段  备注：出发地
+        to_station: "", //类型：String  必有字段  备注：到达地
+        train_date_start: "", //类型：String  必有字段  备注：出发时间start
+        train_date_end: "", //类型：String  必有字段  备注：出发时间end
         pay_status: "", //类型：String  必有字段  备注：支付状态：1:未支付 2:已支付 3:已退款 4:已取消
         pay_type: "", //类型：String  必有字段  备注：支付方式：1:预存款 2：授信支付 3：易宝 4支付宝
-        status: "", //类型：String  必有字段  备注：状态 1 占座中 2占座成功待支付 3已支付 4已出票 4已取消 5占座失败 6出票失败
-        pro_center_id: "", //类型：String  必有字段  备注：利润中心ID
-        is_admin_book: "", //类型：String  必有字段  备注：管理员代订 0否 1是
+        status: "", //类型：String  必有字段  备注：状态 1 占座中 2占座成功待支付 3待出票 4已出票 5已取消 6占座失败 7出票失败
+        is_admin_book: "", //类型：String  必有字段  备注：0 否 1 是管理员代订
         is_settle: "", //类型：String  必有字段  备注：是否结算 1 是 0 否
-        train_date_start: "", //类型：String  必有字段  备注：起飞开始
-        train_date_end: "", //类型：String  必有字段  备注：起飞结束
-        pay_time_start: "", //类型：String  必有字段  备注：支付开始
-        pay_time_end: "", //类型：String  必有字段  备注：支付结束
-        page: 1,
-        limit: 20,
+        created_at_start: "", //类型：String  必有字段  备注：生单时间start
+        created_at_end: "", //类型：String  必有字段  备注：生单时间end
+        limit: "20", //类型：String  必有字段  备注：无
+        page: "1", //类型：String  必有字段  备注：无
       },
 
-      isSegmentsModal: false, // 取消订单弹窗
-      isSegmentsModalData: {}, // 弹窗数据
-      isSegmentsModalType: "", // 弹窗状态
-      isSegmentsModalBtnStatus: false, // 弹窗按钮状态
+      tableLoading: true, //  表格加载
     };
   }
 
-  componentDidMount() {
-    this.getOrderListData();
-    this.getOrderNumber();
-  }
-
-  // 获取订单列表
-  getOrderListData() {
-    this.setState({
-      orderList: [],
-      tableLoading: true,
-    });
-    this.$axios.post("/train/order/list", this.state.orderSearch).then((res) => {
+  // 获取改签列表
+  getChangeList() {
+    let data = this.state.orderSearch;
+    this.$axios.post("/train/order/change/list", data).then((res) => {
       if (res.code === 0) {
         this.setState({
           orderList: res.data,
+          tableLoading: false,
         });
+      } else {
+        message.warning(res.msg);
       }
-      this.setState({
-        tableLoading: false,
-      });
     });
   }
 
@@ -82,38 +67,27 @@ export default class index extends Component {
   async isActiveHeader(val) {
     let data = this.state.orderSearch;
     data.status =
-      val === "占座中"
-        ? "1"
-        : val === "待支付"
-        ? "2"
-        : val === "待出票"
-        ? "3"
-        : val === "已取消"
-        ? "5"
-        : "";
+      val === "待支付" ? "1" : val === "改签中" ? "2" : val === "已改签" ? "3" : val === "已取消" ? "5" : "";
     await this.setState({
       orderSearch: data,
       orderStatusActive: val,
     });
-    await this.getOrderListData();
+    await this.getChangeList();
   }
 
-  // 获取订单状态数量
-  getOrderNumber() {
-    this.$axios.post("/train/order/count", this.state.orderSearch).then((res) => {
-      if (res.code === 0) {
-        this.setState({
-          orderNumberData: res.data,
-        });
-      }
-    });
-  }
-
-  // 跳转详情页
-  jumpDetail(val) {
-    this.props.history.push({
-      pathname: "/orderDetail/" + val.order_no,
-    });
+  // 获取改签列表数量
+  getChangeDataCount(){
+    let data  = this.state.orderSearch
+    this.$axios.post('train/order/change/count',data)
+      .then(res => {
+        if(res.code === 0){
+          this.setState({
+            orderNumberData: res.data
+          })
+        }else {
+          message.warning(res.msg)
+        }
+      })
   }
 
   // 列表分页切换
@@ -127,67 +101,20 @@ export default class index extends Component {
     await this.getOrderListData();
   };
 
-  // 打开取消订单弹窗
-  orderCancel(val) {
-    console.log(val);
-    this.setState({
-      isSegmentsModal: true,
-      isSegmentsModalType: "取消",
-      isSegmentsModalData: val,
-      isSegmentsModalBtnStatus: false,
-    });
+  // 跳转详情页
+  jumpDetail(val) {
+    console.log(val)
+    this.props.history.push({ pathname: "/changeDetail/" + val.change_no });
   }
 
-  // 关闭取消订单弹窗
-  closeModalBtn() {
-    this.setState({
-      isSegmentsModal: false,
-    });
-  }
-
-  // 取消订单提交
-  submitModalBtn() {
-    this.setState({
-      isSegmentsModalBtnStatus: true,
-    });
-    let val = this.state.isSegmentsModalData;
-    let data = {
-      channel: "Di", //类型：String  必有字段  备注：渠道
-      source: val.source, //类型：String  必有字段  备注：数据源
-      order: {
-        //类型：Object  必有字段  备注：订单信息
-        order_no: val.order_no, //类型：String  必有字段  备注：订单号
-        out_trade_no: val.out_trade_no, //类型：String  必有字段  备注：外部订单号
-      },
-    };
-    this.$axios.post("/train/order/cancel", data).then((res) => {
-      this.setState({
-        isSegmentsModalBtnStatus: false,
-      });
-      if (res.code === 0) {
-        message.success(res.data);
-        this.setState({
-          isSegmentsModal: false,
-        });
-        this.getOrderListData();
-        this.getOrderNumber();
-      } else {
-        message.warning(res.msg);
-      }
-    });
-  }
-
-  // 改签单跳转
-  jumpChangePage(val) {
-    this.props.history.push({
-      pathname: "/orderChange/" + val.order_no,
-      query: { changeType: true },
-    });
+  componentDidMount() {
+    this.getChangeDataCount()
+    this.getChangeList();
   }
 
   render() {
     return (
-      <div className="order_list">
+      <div className="change_list">
         <div className="order_header">
           {this.state.orderStatusList.map((item, index) => (
             <div
@@ -201,11 +128,11 @@ export default class index extends Component {
               <span>
                 {item === "全部"
                   ? this.state.orderList.total || 0
-                  : item === "占座中"
+                  : item === "改签中"
                   ? this.state.orderNumberData[1] || 0
                   : item === "待支付"
                   ? this.state.orderNumberData[2] || 0
-                  : item === "待出票"
+                  : item === "已改签"
                   ? this.state.orderNumberData[3] || 0
                   : item === "已取消"
                   ? this.state.orderNumberData[5] || 0
@@ -263,25 +190,6 @@ export default class index extends Component {
                     ) : (
                       ""
                     )}
-                    {(render.status === 3 || render.status === 4) &&
-                    render.refund_order === null ? (
-                      <Button size="small" className="option_refund">
-                        退
-                      </Button>
-                    ) : (
-                      ""
-                    )}
-                    {render.status === 4 && render.change_order === null ? (
-                      <Button
-                        size="small"
-                        className="option_cancel"
-                        onClick={() => this.jumpChangePage(render)}
-                      >
-                        改
-                      </Button>
-                    ) : (
-                      ""
-                    )}
                   </div>
                 )}
               />
@@ -313,37 +221,36 @@ export default class index extends Component {
                 render={(text, render) => (
                   <>
                     <p>
-                      {this.$moment(render.segments[0].departure_time).format(
-                        "YYYY-MM-DD HH:mm"
-                      )}
+                      {render.segments[0]
+                        ? this.$moment(render.segments[0].departure_time).format(
+                            "YY-MM-DD HH:mm"
+                          )
+                        : ""}
                       -
                     </p>
                     <p>
-                      {this.$moment(render.segments[0].arrive_time).format(
-                        "YYYY-MM-DD HH:mm"
-                      )}
+                      {render.segments[0]
+                        ? this.$moment(render.segments[0].arrive_time).format(
+                            "YY-MM-DD HH:mm"
+                          )
+                        : ""}
                     </p>
                   </>
                 )}
               />
               <Column
-                title="票价"
+                title="改签费用"
                 dataIndex="ticket_price"
                 render={(text) => text || "-"}
               />
               <Column
-                title="保险"
+                title="需支付"
                 dataIndex="insurance_price"
                 render={(text) => text || "-"}
               />
               <Column
-                title="服务费"
-                dataIndex="service_price"
-                render={(text) => text || "-"}
-              />
-              <Column
-                title="结算价"
-                dataIndex="need_pay_amount"
+                title="支付时间"
+                dataIndex="pay_time"
                 render={(text) => text || "-"}
               />
               <Column
@@ -371,11 +278,11 @@ export default class index extends Component {
                     }}
                   >
                     {text === 1 ? (
-                      "占座中"
+                      "改签中"
                     ) : text === 2 ? (
                       "待支付"
                     ) : text === 3 ? (
-                      "待出票"
+                      "改签成功"
                     ) : text === 4 ? (
                       "已出票"
                     ) : text === 5 ? (
@@ -397,22 +304,14 @@ export default class index extends Component {
                 )}
               />
               <Column
-                title="取票号"
-                dataIndex="ticket_number"
+                title="申请人"
+                dataIndex="book_user"
                 render={(text) => text || "-"}
               />
               <Column
-                title="预定/支付时间"
-                render={(text, render) => (
-                  <>
-                    <p>{this.$moment(render.created_at).format("YYYY-MM-DD HH:mm")}-</p>
-                    <p>
-                      {render.pay_time
-                        ? this.$moment(render.pay_time).format("YYYY-MM-DD HH:mm")
-                        : "-"}
-                    </p>
-                  </>
-                )}
+                title="申请时间"
+                dataIndex="created_at"
+                render={(text) => this.$moment(text).format("YY-MM-DD HH:mm") || "-"}
               />
             </Table>
 
@@ -427,15 +326,6 @@ export default class index extends Component {
             </div>
           </div>
         </div>
-
-        <CancelOrderModal
-          isSegmentsModalType="取消"
-          isSegmentsModal={this.state.isSegmentsModal}
-          isSegmentsModalData={this.state.isSegmentsModalData}
-          isSegmentsModalBtnStatus={this.state.isSegmentsModalBtnStatus}
-          submitModalBtn={() => this.submitModalBtn()}
-          closeModalBtn={() => this.closeModalBtn()}
-        ></CancelOrderModal>
       </div>
     );
   }

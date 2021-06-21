@@ -2,7 +2,7 @@
  * @Description: 入口页
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 10:36:06
- * @LastEditTime: 2021-05-24 11:58:27
+ * @LastEditTime: 2021-06-18 17:52:41
  * @LastEditors: wish.WuJunLong
  */
 import React from "react";
@@ -14,6 +14,9 @@ import moment from "moment";
 import "moment/locale/zh-cn";
 
 import axios from "./api/api";
+
+import Cookie from "js-cookie";
+import { Base64 } from "js-base64";
 
 React.Component.prototype.$moment = moment;
 React.Component.prototype.$axios = axios;
@@ -76,6 +79,30 @@ React.$getAge = (identityCard) => {
 
   return { age, strBirthday, sex };
 };
+
+
+
+// 判断url地址是否带有 session 参数
+if (
+  React.$filterUrlParams(window.location.search) &&
+  React.$filterUrlParams(window.location.search).session === "logout"
+) {
+  // 如果 session 值为 logout 则遍历所有cookie并删除
+  let cookieData = Cookie.get();
+  for (let i in cookieData) {
+    Cookie.remove(i);
+  }
+} else if (
+  React.$filterUrlParams(window.location.search) &&
+  React.$filterUrlParams(window.location.search).session !== "logout"
+) {
+  // 如果 session 有值 则base64解密 并转义为对象 经行遍历添加cookie
+  let url = React.$filterUrlParams(window.location.search).session;
+  let urlData = JSON.parse(Base64.decode(url));
+  for (let i in urlData) {
+    Cookie.set(i, urlData[i]);
+  }
+}
 
 ReactDOM.render(
   <React.StrictMode>

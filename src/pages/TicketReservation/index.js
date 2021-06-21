@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-06-03 11:23:01
+ * @LastEditTime: 2021-06-08 09:51:42
  * @LastEditors: wish.WuJunLong
  */
 
@@ -197,9 +197,11 @@ export default class index extends Component {
   async openPassengerModal() {
     await this.getGroupList();
     await this.getPassengerList();
-    sessionStorage.setItem("passenger", JSON.stringify(this.state.checkedPassenger));
+    // sessionStorage.setItem("passenger", JSON.stringify(this.state.checkedPassenger));
     await this.setState({
       passengerModal: true,
+      selectedRowKeys: this.state.checkedPassenger
+
     });
   }
 
@@ -276,6 +278,9 @@ export default class index extends Component {
 
   // 乘客信息核验
   passengerVerify(val, type) {
+    if(!val.name || !val.cert_no){
+      return message.warning('请选择信息完整的乘客进行核验')
+    }
     // 判断乘客是否已经经行校验
     if (type) {
       // 已校验 直接打开弹窗
@@ -471,6 +476,9 @@ export default class index extends Component {
   // 增加页面乘客按钮
   addPassenger() {
     let data = this.state.checkedPassenger;
+    if(data.length >= 5){
+      return message.warning('当前订单最多支持五名乘客预定')
+    }
     data.push(newPassenger);
     this.setState({
       checkedPassenger: data,
@@ -480,6 +488,9 @@ export default class index extends Component {
   // 增加同行儿童
   addChild(val) {
     let data = this.state.checkedPassenger;
+    if(data.length >= 5){
+      return message.warning('当前订单最多支持五名乘客预定')
+    }
     data.splice(val + 1, 0, newChild);
     this.setState({
       checkedPassenger: data,
@@ -858,6 +869,8 @@ export default class index extends Component {
         //类型：Object  必有字段  备注：车次信息
         departure: this.state.reservationMessage.station.departure_name, //类型：String  必有字段  备注：出发地
         arrive: this.state.reservationMessage.station.arrive_name, //类型：String  必有字段  备注：到达地
+        departure_code: this.state.reservationMessage.station.departure_code, //类型：String  必有字段  备注：出发地code
+        arrive_code: this.state.reservationMessage.station.arrive_code, //类型：String  必有字段  备注：到达地code
         code: this.state.reservationMessage.train.code, //类型：String  必有字段  备注：车次
         number: this.state.reservationMessage.train.number,
         departure_date: `${this.$moment(
@@ -892,11 +905,25 @@ export default class index extends Component {
   render() {
     const rowSelection = {
       hideSelectAll: true,
+      preserveSelectedRowKeys: true,
       onChange: (selectedRowKeys, selectedRows) => {
+        // console.log(selectedRowKeys)
+        // if(selectedRows.length >= 5){
+        //   return message.warning('当前订单最多支持五名乘客预定')
+        // }
         this.setState({
           selectedRowKeys: selectedRows,
         });
       },
+      // onSelect: (record, selected, selectedRows, nativeEvent) => {
+      //   console.log(record, selected, selectedRows, nativeEvent)
+      //   if(selectedRows.length >= 5){
+      //     return message.warning('当前订单最多支持五名乘客预定')
+      //   }
+      //   this.setState({
+      //     selectedRowKeys: selectedRows,
+      //   });
+      // },
     };
     return (
       <div className="ticket_reservation">
@@ -1358,7 +1385,7 @@ export default class index extends Component {
                     <>
                       <div className="list_type">童</div>
 
-                      <div className="list_item">
+                      <div className="list_item adt_name chd_name">
                         <div className="item_title">姓名</div>
                         <div className="item_input">
                           <Input
@@ -1804,7 +1831,7 @@ export default class index extends Component {
 
           <div className="check_main">
             {this.state.isPassengerCheckStatus ? (
-              <Spin tip="正在经行乘客信息核验，请稍等..."></Spin>
+              <Spin tip="正在进行乘客信息核验，请稍等..."></Spin>
             ) : (
               <>
                 <p>请按照以下方式进行手机核验：</p>

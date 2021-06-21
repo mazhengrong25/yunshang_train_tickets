@@ -30,7 +30,9 @@ export default class index extends Component {
         onCancel={() => this.props.closeModalBtn()}
       >
         {this.props.isSegmentsModalType === "退票" ? (
-          <div className="modal_waring">退票金额以实际退款金额为准，退票规则可参考</div>
+          <div className="modal_waring">退票金额以实际退款金额为准，可参考退票规则</div>
+        ) : this.props.isSegmentsModalType === "改签" ? (
+          <div className="modal_waring">改签费以占位成功后实际价格为准，可参考退票规则</div>
         ) : (
           ""
         )}

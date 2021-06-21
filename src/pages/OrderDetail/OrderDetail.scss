@@ -31,7 +31,7 @@
           .via_stop {
             font-size: 12px;
             font-weight: 400;
-            color: #333333; 
+            color: #333333;
           }
           > p {
             font-size: 14px;
@@ -276,6 +276,30 @@
           font-weight: 400;
           color: #333333;
         }
+      }
+    }
+  }
+  .detail_bottom_box {
+    text-align: center;
+    margin-top: 24px;
+    .detail_btn {
+      width: 120px;
+      height: 40px;
+      background: rgba(#000000, 0.08);
+      border: none;
+      font-size: 14px;
+      font-weight: 400;
+      color: #000000;
+      border-radius: 40px;
+      -webkit-border-radius: 40px;
+      -moz-border-radius: 40px;
+      -ms-border-radius: 40px;
+      -o-border-radius: 40px;
+      &:hover {
+        color: #000000;
+      }
+      &:not(:last-child) {
+        margin-right: 8px;
       }
     }
   }

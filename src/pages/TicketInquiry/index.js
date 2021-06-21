@@ -2,7 +2,7 @@
  * @Description: 车票查询
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 11:06:03
- * @LastEditTime: 2021-05-28 11:38:02
+ * @LastEditTime: 2021-06-18 10:53:29
  * @LastEditors: wish.WuJunLong
  */
 
@@ -62,14 +62,26 @@ export default class index extends Component {
     };
   }
   async componentWillMount() {
-    await this.setState({
-      ticketMessage: React.$filterUrlParams(decodeURI(this.props.location.search)),
-    });
-    await this.setState({
-      start: this.state.ticketMessage.departure,
-      end: this.state.ticketMessage.arrive,
-      time: this.$moment(this.state.ticketMessage.departure_date),
-    });
+    if (this.props.type) {
+      await this.setState({
+        ticketMessage: this.props.type,
+      });
+      await this.setState({
+        start: this.props.type.departure,
+        end: this.props.type.arrive,
+        time: this.$moment(this.props.type.departure_date),
+      });
+    } else {
+      await this.setState({
+        ticketMessage: React.$filterUrlParams(decodeURI(this.props.location.search)),
+      });
+      await this.setState({
+        start: this.state.ticketMessage.departure,
+        end: this.state.ticketMessage.arrive,
+        time: this.$moment(this.state.ticketMessage.departure_date),
+      });
+    }
+
     await this.getTicketList();
     await this.getDateList();
   }
@@ -155,15 +167,18 @@ export default class index extends Component {
     if (!this.state.start || !this.state.end || !this.state.time) {
       return message.warning("请完整搜索信息");
     }
-    let url = `/ticketInquiry?departure=${this.state.start}&arrive=${
-      this.state.end
-    }&departure_date=${this.$moment(this.state.time).format("YYYY-MM-DD")}`;
-    await this.props.history.push(encodeURI(url));
+    if (!this.props.type) {
+      let url = `/ticketInquiry?departure=${this.state.start}&arrive=${
+        this.state.end
+      }&departure_date=${this.$moment(this.state.time).format("YYYY-MM-DD")}`;
+      await this.props.history.push(encodeURI(url));
+    }
     let data = {
       departure: this.state.start,
       arrive: this.state.end,
       departure_date: this.$moment(this.state.time).format("YYYY-MM-DD"),
     };
+
     await this.setState({
       ticketMessage: data,
     });
@@ -408,19 +423,26 @@ export default class index extends Component {
       station: val.station,
       train: val.train,
     };
-    this.$axios.post("/train/check", data).then((res) => {
+    if (this.props.type) {
+      this.props.getNewTicketData(val, oval);
       this.setState({
         submitLoading: false,
       });
-      if (res.code === 0) {
-        // let uData = this.state.ticketMessage;
-        // let url = `/ticketReservation?d=${uData.departure}&a=${uData.arrive}&t=${uData.ticket}&e=${uData.departure_date}&k=${res.data.key}&c=${oval.code}`;
-        let url = `/ticketReservation?k=${res.data.key}&c=${oval.code}`;
-        this.props.history.push(encodeURI(url));
-      } else {
-        message.warning(res.msg);
-      }
-    });
+    } else {
+      this.$axios.post("/train/check", data).then((res) => {
+        this.setState({
+          submitLoading: false,
+        });
+        if (res.code === 0) {
+          // let uData = this.state.ticketMessage;
+          // let url = `/ticketReservation?d=${uData.departure}&a=${uData.arrive}&t=${uData.ticket}&e=${uData.departure_date}&k=${res.data.key}&c=${oval.code}`;
+          let url = `/ticketReservation?k=${res.data.key}&c=${oval.code}`;
+          this.props.history.push(encodeURI(url));
+        } else {
+          message.warning(res.msg);
+        }
+      });
+    }
   }
 
   render() {
