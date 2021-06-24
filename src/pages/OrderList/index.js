@@ -185,6 +185,14 @@ export default class index extends Component {
     });
   }
 
+  // 退票单跳转
+  jumpRefundPage(val) {
+    this.props.history.push({
+      pathname:"/orderRefund/" + val.order_no,
+      query: { changeType: true},
+    })
+  }
+
   render() {
     return (
       <div className="order_list">
@@ -265,7 +273,11 @@ export default class index extends Component {
                     )}
                     {(render.status === 3 || render.status === 4) &&
                     render.refund_order === null ? (
-                      <Button size="small" className="option_refund">
+                      <Button 
+                        size="small" 
+                        className="option_refund"
+                        onClick={() => this.jumpRefundPage(render)}
+                      >
                         退
                       </Button>
                     ) : (

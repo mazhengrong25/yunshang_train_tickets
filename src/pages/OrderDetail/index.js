@@ -2,8 +2,8 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-06-18 17:02:58
- * @LastEditors: wish.WuJunLong
+ * @LastEditTime: 2021-06-23 17:56:10
+ * @LastEditors: mzr
  */
 
 import React, { Component } from "react";
@@ -128,6 +128,13 @@ export default class index extends Component {
       pathname: "/orderChange/" + this.state.orderNo,
       query: { changeType: true },
     });
+  }
+  // 跳转退票页面
+  jumpRefundPage() {
+    this.props.history.push({
+      pathname: "/orderRefund/" + this.state.orderNo,
+      query: { changeType: true },
+    })
   }
 
   // 打开取消订单弹窗
@@ -547,7 +554,7 @@ export default class index extends Component {
           )}
           {(this.state.detailData.status === 3 || this.state.detailData.status === 4) &&
           this.state.detailData.refund_order === null ? (
-            <Button className="detail_btn">退票</Button>
+            <Button className="detail_btn" onClick={() => this.jumpRefundPage()}>退票</Button>
           ) : (
             ""
           )}
