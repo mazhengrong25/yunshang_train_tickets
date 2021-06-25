@@ -2,7 +2,7 @@
  * @Description: 入口页
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 10:36:06
- * @LastEditTime: 2021-06-18 17:52:41
+ * @LastEditTime: 2021-06-22 14:19:22
  * @LastEditors: wish.WuJunLong
  */
 import React from "react";
@@ -15,11 +15,7 @@ import "moment/locale/zh-cn";
 
 import axios from "./api/api";
 
-import Cookie from "js-cookie";
-import { Base64 } from "js-base64";
-
 React.Component.prototype.$moment = moment;
-React.Component.prototype.$axios = axios;
 
 // 拆分地址栏参数
 React.$filterUrlParams = (val) => {
@@ -80,29 +76,37 @@ React.$getAge = (identityCard) => {
   return { age, strBirthday, sex };
 };
 
-
-
 // 判断url地址是否带有 session 参数
 if (
   React.$filterUrlParams(window.location.search) &&
-  React.$filterUrlParams(window.location.search).session === "logout"
+  React.$filterUrlParams(window.location.search).ssotoken === "logout"
 ) {
   // 如果 session 值为 logout 则遍历所有cookie并删除
-  let cookieData = Cookie.get();
-  for (let i in cookieData) {
-    Cookie.remove(i);
-  }
+  // let cookieData = Cookie.get();
+  // console.log(cookieData);
+  // for (let i in cookieData) {
+  //   console.log(i);
+  //   Cookie.remove(i);
+  // }
+  localStorage.removeItem('ssotoken')
 } else if (
   React.$filterUrlParams(window.location.search) &&
-  React.$filterUrlParams(window.location.search).session !== "logout"
+  React.$filterUrlParams(window.location.search).ssotoken !== "logout"
 ) {
   // 如果 session 有值 则base64解密 并转义为对象 经行遍历添加cookie
-  let url = React.$filterUrlParams(window.location.search).session;
-  let urlData = JSON.parse(Base64.decode(url));
-  for (let i in urlData) {
-    Cookie.set(i, urlData[i]);
-  }
+  let url = React.$filterUrlParams(window.location.search).ssotoken;
+  console.log(url);
+  localStorage.setItem("ssotoken", url);
+  // let urlData = JSON.parse(Base64.decode(url));
+  // let urlData = JSON.parse(url);
+  // for (let i in urlData) {
+  //   console.log(i, urlData[i]);
+  //   Cookie.set(i, urlData[i]);
+  // }
 }
+
+axios.defaults.headers.common["ssotoken"] = localStorage.getItem("ssotoken") || "";
+React.Component.prototype.$axios = axios;
 
 ReactDOM.render(
   <React.StrictMode>

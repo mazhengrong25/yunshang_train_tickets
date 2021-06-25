@@ -275,6 +275,16 @@
           font-size: 14px;
           font-weight: 400;
           color: #333333;
+
+          &.remark{
+            width: 100%;
+            display: flex;
+            align-items: center;
+            margin-top: 24px;
+            p{
+              flex-shrink: 0;
+            }
+          }
         }
       }
     }
@@ -282,6 +292,19 @@
   .detail_bottom_box {
     text-align: center;
     margin-top: 24px;
+    .back_btn {
+      width: 120px;
+      height: 40px;
+      background: rgba(#000000, 0.08);
+      box-shadow: 0px 3px 6px rgba(0, 112, 226, 0.3);
+      border: none;
+      border-radius: 40px;
+      box-shadow: none;
+      margin-right: 8px;
+      &:hover {
+        color: #000;
+      }
+    }
     .detail_btn {
       width: 120px;
       height: 40px;

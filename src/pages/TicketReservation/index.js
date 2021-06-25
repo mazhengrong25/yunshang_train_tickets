@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-06-08 09:51:42
+ * @LastEditTime: 2021-06-22 15:02:46
  * @LastEditors: wish.WuJunLong
  */
 
@@ -20,6 +20,7 @@ import {
   Radio,
   Switch,
   Spin,
+  Popover,
 } from "antd";
 
 import ViaStopPopover from "../../components/viaStopPopover"; // 经停站组件
@@ -28,7 +29,9 @@ import TripIcon from "../../static/trip_icon.png"; // 行程icon
 import AddPassengerIcon from "../../static/add_passenger_btn.png"; // 添加乘客图标
 import RemoveBtnIcon from "../../static/remove_btn.png"; // 删除按钮
 import InsuranceIcon from "../../static/insurance_icon.png"; // 保险图标
-import WarningIcon from "../../static/warn_icon.png";
+import WarningIcon from "../../static/warn_icon.png"; // 警告图标
+
+import PassengerRemark from "../../static/ADT_name_icon.png"; // 乘客备注
 
 import "./TicketReservation.scss";
 
@@ -200,8 +203,7 @@ export default class index extends Component {
     // sessionStorage.setItem("passenger", JSON.stringify(this.state.checkedPassenger));
     await this.setState({
       passengerModal: true,
-      selectedRowKeys: this.state.checkedPassenger
-
+      selectedRowKeys: this.state.checkedPassenger,
     });
   }
 
@@ -278,8 +280,8 @@ export default class index extends Component {
 
   // 乘客信息核验
   passengerVerify(val, type) {
-    if(!val.name || !val.cert_no){
-      return message.warning('请选择信息完整的乘客进行核验')
+    if (!val.name || !val.cert_no) {
+      return message.warning("请选择信息完整的乘客进行核验");
     }
     // 判断乘客是否已经经行校验
     if (type) {
@@ -476,22 +478,33 @@ export default class index extends Component {
   // 增加页面乘客按钮
   addPassenger() {
     let data = this.state.checkedPassenger;
-    if(data.length >= 5){
-      return message.warning('当前订单最多支持五名乘客预定')
+    if (data.length >= 5) {
+      return message.warning("当前订单最多支持五名乘客预定");
     }
-    data.push(newPassenger);
+    let adtData = [];
+    let chdData = [];
+    data.map((item) => {
+      if (item.type === "ADT") {
+        adtData.push(item);
+      } else {
+        chdData.push(item);
+      }
+    });
+    adtData.push(newPassenger);
+    let newData = adtData.concat(chdData);
     this.setState({
-      checkedPassenger: data,
+      checkedPassenger: newData,
     });
   }
 
   // 增加同行儿童
   addChild(val) {
     let data = this.state.checkedPassenger;
-    if(data.length >= 5){
-      return message.warning('当前订单最多支持五名乘客预定')
+    if (data.length >= 5) {
+      return message.warning("当前订单最多支持五名乘客预定");
     }
-    data.splice(val + 1, 0, newChild);
+    // data.splice(val + 1, 0, newChild);
+    data.push(newChild);
     this.setState({
       checkedPassenger: data,
     });
@@ -1321,6 +1334,29 @@ export default class index extends Component {
                             allowClear
                             onChange={this.editPassenger.bind(this, index, "name")}
                           ></Input>
+                          {item.remark ? (
+                            <Popover
+                              overlayClassName="passenger_remark_popover"
+                              content={
+                                <div className="passenger_remark">
+                                  <p className="remark_title">备注</p>
+                                  <p className="remark_message">{item.remark}</p>
+                                  <div
+                                    className="remark_btn"
+                                    onClick={() => message.warning("功能开发中")}
+                                  >
+                                    修改
+                                  </div>
+                                </div>
+                              }
+                            >
+                              <div className="remark_icon">
+                                <img src={PassengerRemark} alt="乘客备注"></img>
+                              </div>
+                            </Popover>
+                          ) : (
+                            ""
+                          )}
                         </div>
                       </div>
 
@@ -1357,7 +1393,7 @@ export default class index extends Component {
                         </div>
                       </div>
 
-                      {item.verify_status !== 1 ? (
+                      {item.verify_status !== 1 && item.name && item.cert_no ? (
                         <Button
                           className="is_verify_status"
                           type="link"

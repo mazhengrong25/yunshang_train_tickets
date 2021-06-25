@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-06-18 17:02:58
+ * @LastEditTime: 2021-06-22 14:30:16
  * @LastEditors: wish.WuJunLong
  */
 
@@ -38,6 +38,9 @@ export default class index extends Component {
       isSegmentsModalData: {}, // 弹窗数据
       isSegmentsModalType: "", // 弹窗状态
       isSegmentsModalBtnStatus: false, // 弹窗按钮状态
+
+      orderRemark: "", // 订单备注
+      remarkLoading: false, // 备注按钮加载
     };
   }
 
@@ -177,9 +180,46 @@ export default class index extends Component {
     });
   }
 
+  // 返回订单列表
+  jumpBack() {
+    try {
+      this.props.history.goBack();
+    } catch (error) {
+      this.props.history.push({
+        pathname: "/orderList/",
+      });
+    }
+  }
+
+  changeRemark = (val) => {
+    this.setState({
+      orderRemark: val.target.value,
+    });
+  };
+
   // 保存备注
-  saveRemarkBtn(){
-    
+  saveRemarkBtn() {
+    if (!this.state.orderRemark) {
+      return message.warning("请填写备注信息");
+    }
+    this.setState({
+      remarkLoading: true,
+    });
+    let data = {
+      order_no: this.state.detailData.order_no,
+      remark: this.state.orderRemark,
+    };
+    this.$axios.post("/train/remark/save", data).then((res) => {
+      this.setState({
+        remarkLoading: false,
+      });
+      if (res.code === 0) {
+        message.success(res.data);
+        this.getDetailData();
+      } else {
+        message.warning(res.data);
+      }
+    });
   }
 
   render() {
@@ -520,21 +560,34 @@ export default class index extends Component {
             <div className="main_list">手机号：{this.state.detailData.phone || "-"}</div>
             <div className="main_list">邮箱：{this.state.detailData.mail || "-"}</div>
           </div>
-          {!this.state.detailData.remark ? (
-            <div className="order_info_main">
-              <div className="main_list">
-                备注：
-                <Input placeholder="请输入"></Input>
-              </div>
+          <div className="order_info_main">
+            <div className="main_list remark">
+              <p>备注：</p>
+              {!this.state.detailData.remark ? (
+                <Input
+                  placeholder="请输入"
+                  value={this.state.orderRemark}
+                  onChange={this.changeRemark}
+                ></Input>
+              ) : (
+                this.state.detailData.remark
+              )}
             </div>
-          ) : (
-            ""
-          )}
+          </div>
         </div>
 
         <div className="detail_bottom_box">
+          <Button className="back_btn" onClick={() => this.jumpBack()}>
+            返回
+          </Button>
           {!this.state.detailData.remark ? (
-            <Button className="detail_btn" onClick={()=> this.saveRemarkBtn()}>保存</Button>
+            <Button
+              loading={this.state.remarkLoading}
+              className="detail_btn"
+              onClick={() => this.saveRemarkBtn()}
+            >
+              保存
+            </Button>
           ) : (
             ""
           )}
@@ -551,7 +604,7 @@ export default class index extends Component {
           ) : (
             ""
           )}
-          {this.state.detailData.status === 4 ||
+          {this.state.detailData.status === 4 &&
           this.state.detailData.change_order === null ? (
             <Button className="detail_btn" onClick={() => this.jumpChangePage()}>
               改签

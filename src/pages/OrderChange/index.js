@@ -2,7 +2,7 @@
  * @Description: 改签详情
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
- * @LastEditTime: 2021-06-18 16:04:13
+ * @LastEditTime: 2021-06-22 14:20:24
  * @LastEditors: wish.WuJunLong
  */
 
@@ -211,6 +211,8 @@ export default class index extends Component {
           isSegmentsModalBtnStatus: false,
           isSegmentsModal: false,
         });
+        this.getDetailData();
+        // this.props.history.push({ pathname: "/changeDetail/" + res.data.change_no });
         message.success(res.msg);
       } else {
         this.setState({
