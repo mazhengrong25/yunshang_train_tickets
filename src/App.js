@@ -2,8 +2,8 @@
  * @Description: 配置页
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 10:36:06
- * @LastEditTime: 2021-06-18 16:49:59
- * @LastEditors: wish.WuJunLong
+ * @LastEditTime: 2021-06-21 17:40:26
+ * @LastEditors: mzr
  */
 import React, { Fragment } from "react";
 
@@ -21,6 +21,9 @@ import OrderDetail from "./pages/OrderDetail"; // 订单详情
 import ChangeList from "./pages/ChangeList"; // 改签列表
 import ChangeDetail from "./pages/ChangeDetail"; // 改签详情
 import OrderChange from "./pages/OrderChange"; // 改签页
+import RefundList from "./pages/RefundList"; // 退票列表
+import RefundDetail from "./pages/RefundDetail"; //  退票详情
+import OrderRefund from "./pages/OrderRefund"; // 退票页
 
 function App() {
   return (
@@ -28,6 +31,9 @@ function App() {
       <BrowserRouter>
         <Fragment>
           <Switch>
+            <Route exact path="/orderRefund/:id" component={OrderRefund}></Route>
+            <Route exact path="/refundDetail/:id" component={RefundDetail}></Route>
+            <Route exact path="/refundList" component={RefundList}></Route>
             <Route exact path="/orderChange/:id" component={OrderChange}></Route>
             <Route exact path="/changeDetail/:id" component={ChangeDetail}></Route>
             <Route exact path="/changeList" component={ChangeList}></Route>
