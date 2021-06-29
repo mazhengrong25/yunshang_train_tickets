@@ -2,13 +2,13 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-06-25 15:08:48
+ * @LastEditTime: 2021-06-25 16:46:53
  * @LastEditors: wish.WuJunLong
  */
 
 import React, { Component } from "react";
 
-import { Button, message, Table, Popover, Input } from "antd";
+import { Button, message, Table, Popover, Input, Spin } from "antd";
 
 import TicketIcon from "../../static/trip_icon.png"; // 行程图标
 import InsuranceIcon from "../../static/insurance_icon.png"; // 保险图标
@@ -27,6 +27,7 @@ export default class index extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      pageLoading: false,
       orderNo: "", // 订单号
       detailData: {}, // 订单详情
 
@@ -71,6 +72,13 @@ export default class index extends Component {
           viaStopPopoverMessage: newViaStop,
           detailData: newData,
         });
+        setTimeout(() => {
+          this.setState({
+            pageLoading: false,
+          });
+        }, 500);
+      } else {
+        message.warning(res.data);
       }
     });
   }
@@ -117,8 +125,11 @@ export default class index extends Component {
   };
 
   // 刷新页面
-  refreshData() {
-    this.getDetailData();
+  async refreshData() {
+    await this.setState({
+      pageLoading: true,
+    });
+    await this.getDetailData();
   }
 
   imageBase(val) {
@@ -137,7 +148,7 @@ export default class index extends Component {
     this.props.history.push({
       pathname: "/orderRefund/" + this.state.orderNo,
       query: { changeType: true },
-    })
+    });
   }
 
   // 打开取消订单弹窗
@@ -232,403 +243,409 @@ export default class index extends Component {
   render() {
     return (
       <div className="order_detail">
-        <div className="detail_template detail_header">
-          <div className="header_left">
-            <div className="left_no">
-              <div className="header_title">订单编号</div>
-              <p>{this.state.orderNo}</p>
-            </div>
+        <Spin spinning={this.state.pageLoading} tip="获取数据中...">
+          <div className="detail_template detail_header">
+            <div className="header_left">
+              <div className="left_no">
+                <div className="header_title">订单编号</div>
+                <p>{this.state.orderNo}</p>
+              </div>
 
-            <div className="left_box">
-              <p>
-                <span className="header_title">订票员</span>
-                {this.state.detailData.book_user || "-"}
-              </p>
-              <p>
-                <span className="header_title">预定时间</span>
-                {this.state.detailData.created_at || "-"}
-              </p>
-              <p>
-                <span className="header_title">订单状态</span>
-                <span
-                  style={{
-                    color:
-                      this.state.detailData.status === 1
-                        ? "#FB9826"
-                        : this.state.detailData.status === 2
-                        ? "#FF0000"
-                        : this.state.detailData.status === 3
-                        ? "#5AB957"
-                        : this.state.detailData.status === 4
-                        ? "#0070E2"
-                        : this.state.detailData.status === 5
-                        ? "#333333"
-                        : this.state.detailData.status === 6
-                        ? "#FF0000"
-                        : this.state.detailData.status === 7
-                        ? "#FF0000"
-                        : "#333333",
-                  }}
-                >
-                  {this.state.detailData.status === 1 ? (
-                    "占座中"
-                  ) : this.state.detailData.status === 2 ? (
-                    "待支付"
-                  ) : this.state.detailData.status === 3 ? (
-                    "待出票"
-                  ) : this.state.detailData.status === 4 ? (
-                    "已出票"
-                  ) : this.state.detailData.status === 5 ? (
-                    "已取消"
-                  ) : this.state.detailData.status === 6 ? (
-                    <Popover
-                      content={this.state.detailData.status_remark}
-                      title={false}
-                      trigger="hover"
-                    >
-                      <span style={{ cursor: "pointer" }}>占座失败</span>
-                    </Popover>
-                  ) : this.state.detailData.status === 7 ? (
-                    "出票失败"
-                  ) : (
-                    this.state.detailData.status || "-"
-                  )}
-                </span>
-              </p>
-            </div>
-          </div>
-
-          <div className="header_right">
-            <div className="right_price_box">
-              <p className="price">
-                &yen; {this.state.detailData.need_pay_amount || 0}
-                {this.state.detailData.status === 2 ? (
-                  <Button
-                    className="jump_order_pay"
-                    type="link"
-                    href={`http://192.168.0.187/pay/${this.imageBase(
-                      this.state.detailData.order_no
-                    )}`}
+              <div className="left_box">
+                <p>
+                  <span className="header_title">订票员</span>
+                  {this.state.detailData.book_user || "-"}
+                </p>
+                <p>
+                  <span className="header_title">预定时间</span>
+                  {this.state.detailData.created_at || "-"}
+                </p>
+                <p>
+                  <span className="header_title">订单状态</span>
+                  <span
+                    style={{
+                      color:
+                        this.state.detailData.status === 1
+                          ? "#FB9826"
+                          : this.state.detailData.status === 2
+                          ? "#FF0000"
+                          : this.state.detailData.status === 3
+                          ? "#5AB957"
+                          : this.state.detailData.status === 4
+                          ? "#0070E2"
+                          : this.state.detailData.status === 5
+                          ? "#333333"
+                          : this.state.detailData.status === 6
+                          ? "#FF0000"
+                          : this.state.detailData.status === 7
+                          ? "#FF0000"
+                          : "#333333",
+                    }}
                   >
-                    立即支付
-                  </Button>
-                ) : (
-                  ""
-                )}
-              </p>
-            </div>
-            {this.state.detailData.status === 1 ? (
-              <div className="seat_status">
-                预计在
-                {this.$moment(this.state.detailData.created_at)
-                  .add(30, "m")
-                  .format("HH:mm")}
-                分前完成占座{" "}
-                <Button size="small" type="text" onClick={() => this.refreshData()}>
-                  刷新
-                </Button>
-              </div>
-            ) : (
-              ""
-            )}
-          </div>
-        </div>
-
-        <div className="detail_template detail_ticket_info">
-          <div className="template_title">
-            <p>车次信息</p>
-            <div className="title_option"></div>
-          </div>
-
-          <div className="ticket_info">
-            <div className="info_box">
-              <p>{this.state.detailData.train_number || "-"}</p>
-              <ViaStopPopover
-                data={this.state.viaStopPopoverMessage}
-                popoverStatus={this.state.viaStopPopover}
-                popoverData={this.state.viaStopData}
-                popoverPosition="bottomLeft"
-                close={this.closeViaStopPopover}
-                open={this.openViaStopMessage}
-              ></ViaStopPopover>
-            </div>
-
-            <div className="info_date">
-              {this.state.detailData.segments
-                ? `${this.$moment(
-                    this.state.detailData.segments[0].departure_time
-                  ).format("YYYY-MM-DD")}（${this.$moment(
-                    this.state.detailData.segments[0].departure_time
-                  ).format("ddd")}）`
-                : "-"}
-            </div>
-
-            <div className="info_address">
-              <div className="address_list">
-                <span>始</span>
-                <p>
-                  {this.state.detailData.segments
-                    ? this.$moment(
-                        this.state.detailData.segments[0].departure_time
-                      ).format("HH:mm")
-                    : "-"}
+                    {this.state.detailData.status === 1 ? (
+                      "占座中"
+                    ) : this.state.detailData.status === 2 ? (
+                      "待支付"
+                    ) : this.state.detailData.status === 3 ? (
+                      "待出票"
+                    ) : this.state.detailData.status === 4 ? (
+                      "已出票"
+                    ) : this.state.detailData.status === 5 ? (
+                      "已取消"
+                    ) : this.state.detailData.status === 6 ? (
+                      <Popover
+                        content={this.state.detailData.status_remark}
+                        title={false}
+                        trigger="hover"
+                      >
+                        <span style={{ cursor: "pointer" }}>占座失败</span>
+                      </Popover>
+                    ) : this.state.detailData.status === 7 ? (
+                      "出票失败"
+                    ) : (
+                      this.state.detailData.status || "-"
+                    )}
+                  </span>
                 </p>
-                {this.state.detailData.segments
-                  ? this.state.detailData.segments[0].from_city
-                  : "-"}
-              </div>
-              <div className="address_icon">
-                <img src={TicketIcon} alt="航程图标"></img>
-              </div>
-              <div className="address_list">
-                <span>终</span>
-                <p>
-                  {this.state.detailData.segments
-                    ? this.$moment(this.state.detailData.segments[0].arrive_time).format(
-                        "HH:mm"
-                      )
-                    : "-"}
-                </p>
-                {this.state.detailData.segments
-                  ? this.state.detailData.segments[0].to_city
-                  : "-"}
               </div>
             </div>
 
-            <div className="info_time">
-              行程：
-              {this.state.detailData.segments
-                ? `${Math.floor(
-                    Number(this.state.detailData.segments[0].travel_time) / 60
-                  )}小时${Math.floor(
-                    Number(this.state.detailData.segments[0].travel_time) % 60
-                  )}分`
-                : "-"}
-            </div>
-
-            <div className="info_cabin">
-              席别：
-              {this.state.detailData.segments
-                ? this.state.detailData.segments[0].seat
-                : "-"}
-            </div>
-          </div>
-        </div>
-
-        <div className="detail_template detail_passenger">
-          <div className="template_title">
-            <p>乘客信息</p>
-            {this.state.detailData.ticket_number ? (
-              <div className="title_option">
-                取票号{this.state.detailData.ticket_number}
-              </div>
-            ) : (
-              ""
-            )}
-          </div>
-          <div className="passenger_main">
-            {this.state.detailData.passengers &&
-              this.state.detailData.passengers.map((item, index) => (
-                <div className="main_list" key={index}>
-                  {item.PassengerType === "ADT" ? (
-                    <>
-                      <div className="list_type">成</div>
-                      <div className="list_item">
-                        <p className="list_title">姓名</p>
-                        {item.PassengerName}
-                      </div>
-                      <div className="list_item">
-                        <p className="list_title">身份证</p>
-                        {item.CredentialNo}
-                      </div>
-                      <div className="list_item">
-                        <p className="list_title">手机号</p>
-                        {item.phone}
-                      </div>
-                      {this.state.detailData.status !== 1 &&
-                      this.state.detailData.status !== 6 ? (
-                        <>
-                          <div className="list_item">
-                            <p className="list_title">票号</p>
-                            {item.ticket_no}
-                          </div>
-                          <div className="list_item">
-                            <p className="list_title">座位</p>
-                            {item.seat_info}
-                          </div>
-                        </>
-                      ) : (
-                        ""
-                      )}
-                    </>
-                  ) : item.PassengerType === "CHD" ? (
-                    <>
-                      <div className="list_type">童</div>
-                      <div className="list_item">
-                        <p className="list_title">姓名</p>
-                        {item.PassengerName}
-                      </div>
-                      <div className="list_item">
-                        <p className="list_title">出生日期</p>
-                        {item.Birthday}
-                      </div>
-                      {this.state.detailData.status !== 1 &&
-                      this.state.detailData.status !== 6 ? (
-                        <>
-                          <div className="list_item">
-                            <p className="list_title">票号</p>
-                            {item.ticket_no}
-                          </div>
-                          <div className="list_item">
-                            <p className="list_title">座位</p>
-                            {item.seat_info}
-                          </div>
-                        </>
-                      ) : (
-                        ""
-                      )}
-                    </>
+            <div className="header_right">
+              <div className="right_price_box">
+                <p className="price">
+                  &yen; {this.state.detailData.need_pay_amount || 0}
+                  {this.state.detailData.status === 2 ? (
+                    <Button
+                      className="jump_order_pay"
+                      type="link"
+                      href={`http://192.168.0.187/pay/${this.imageBase(
+                        this.state.detailData.order_no
+                      )}`}
+                    >
+                      立即支付
+                    </Button>
                   ) : (
                     ""
                   )}
+                </p>
+              </div>
+              {this.state.detailData.status === 1 ? (
+                <div className="seat_status">
+                  预计在
+                  {this.$moment(this.state.detailData.created_at)
+                    .add(30, "m")
+                    .format("HH:mm")}
+                  分前完成占座{" "}
+                  <Button size="small" type="text" onClick={() => this.refreshData()}>
+                    刷新
+                  </Button>
                 </div>
-              ))}
-          </div>
-        </div>
-
-        <div className="detail_template detail_insurance">
-          <div className="template_title">
-            <p>
-              <img src={InsuranceIcon} alt="保险图标"></img>
-              保险服务
-            </p>
-          </div>
-          <div className="insurance_main">
-            {String(this.state.detailData.insurance_msg).length > 10 ? (
-              <>
-                <div className="main_title">已选保险</div>
-                <div className="main_info">
-                  {this.state.detailData.insurance_msg
-                    ? this.state.detailData.insurance_msg.insure_desc
-                    : "-"}
-                </div>
-                <div className="main_price">
-                  <span>
-                    &yen;
-                    {this.state.detailData.insurance_msg
-                      ? this.state.detailData.insurance_msg.default_dis_price
-                      : "-"}
-                  </span>
-                  元/人
-                </div>
-              </>
-            ) : (
-              "未购买保险"
-            )}
-          </div>
-        </div>
-
-        <div className="detail_template detail_price_info">
-          <div className="template_title">
-            <p>价格明细</p>
-          </div>
-          <div className="price_info_main">
-            <Table
-              size="small"
-              pagination={false}
-              dataSource={this.state.detailData.passengers}
-              rowKey="id"
-            >
-              <Column title="乘车人" dataIndex="PassengerName" />
-              <Column
-                title="乘客类型"
-                dataIndex="PassengerType"
-                render={(text) =>
-                  text === "ADT" ? "成人" : text === "CHD" ? "儿童" : text
-                }
-              />
-              <Column title="票面价" dataIndex="ticket_price" />
-              <Column title="服务费" dataIndex="service_price" />
-              <Column title="保险" dataIndex="insurance_price" />
-              <Column title="结算价" dataIndex="total_price" />
-            </Table>
-          </div>
-        </div>
-
-        <div className="detail_template detail_order_info">
-          <div className="template_title">
-            <p>订单信息</p>
-          </div>
-          <div className="order_info_main">
-            <div className="main_list">
-              联系人：
-              {this.state.detailData.book_user_name || "-"}
-            </div>
-            <div className="main_list">手机号：{this.state.detailData.phone || "-"}</div>
-            <div className="main_list">邮箱：{this.state.detailData.mail || "-"}</div>
-          </div>
-          <div className="order_info_main">
-            <div className="main_list remark">
-              <p>备注：</p>
-              {!this.state.detailData.remark ? (
-                <Input
-                  placeholder="请输入"
-                  value={this.state.orderRemark}
-                  onChange={this.changeRemark}
-                ></Input>
               ) : (
-                this.state.detailData.remark
+                ""
               )}
             </div>
           </div>
-        </div>
 
-        <div className="detail_bottom_box">
-          <Button className="back_btn" onClick={() => this.jumpBack()}>
-            返回
-          </Button>
-          {!this.state.detailData.remark ? (
-            <Button
-              loading={this.state.remarkLoading}
-              className="detail_btn"
-              onClick={() => this.saveRemarkBtn()}
-            >
-              保存
-            </Button>
-          ) : (
-            ""
-          )}
-          {this.state.detailData.status === 1 || this.state.detailData.status === 2 ? (
-            <Button className="detail_btn" onClick={() => this.orderCancel("取消")}>
-              取消订单
-            </Button>
-          ) : (
-            ""
-          )}
-          {(this.state.detailData.status === 3 || this.state.detailData.status === 4) &&
-          this.state.detailData.refund_order === null ? (
-            <Button className="detail_btn" onClick={() => this.jumpRefundPage()}>退票</Button>
-          ) : (
-            ""
-          )}
-          {this.state.detailData.status === 4 &&
-          this.state.detailData.change_order === null ? (
-            <Button className="detail_btn" onClick={() => this.jumpChangePage()}>
-              改签
-            </Button>
-          ) : (
-            ""
-          )}
-        </div>
+          <div className="detail_template detail_ticket_info">
+            <div className="template_title">
+              <p>车次信息</p>
+              <div className="title_option"></div>
+            </div>
 
-        <CancelOrderModal
-          isSegmentsModalType={this.state.isSegmentsModalType}
-          isSegmentsModal={this.state.isSegmentsModal}
-          isSegmentsModalData={this.state.isSegmentsModalData}
-          isSegmentsModalBtnStatus={this.state.isSegmentsModalBtnStatus}
-          submitModalBtn={() => this.submitModalBtn()}
-          closeModalBtn={() => this.closeModalBtn()}
-        ></CancelOrderModal>
+            <div className="ticket_info">
+              <div className="info_box">
+                <p>{this.state.detailData.train_number || "-"}</p>
+                <ViaStopPopover
+                  data={this.state.viaStopPopoverMessage}
+                  popoverStatus={this.state.viaStopPopover}
+                  popoverData={this.state.viaStopData}
+                  popoverPosition="bottomLeft"
+                  close={this.closeViaStopPopover}
+                  open={this.openViaStopMessage}
+                ></ViaStopPopover>
+              </div>
+
+              <div className="info_date">
+                {this.state.detailData.segments
+                  ? `${this.$moment(
+                      this.state.detailData.segments[0].departure_time
+                    ).format("YYYY-MM-DD")}（${this.$moment(
+                      this.state.detailData.segments[0].departure_time
+                    ).format("ddd")}）`
+                  : "-"}
+              </div>
+
+              <div className="info_address">
+                <div className="address_list">
+                  <span>始</span>
+                  <p>
+                    {this.state.detailData.segments
+                      ? this.$moment(
+                          this.state.detailData.segments[0].departure_time
+                        ).format("HH:mm")
+                      : "-"}
+                  </p>
+                  {this.state.detailData.segments
+                    ? this.state.detailData.segments[0].from_city
+                    : "-"}
+                </div>
+                <div className="address_icon">
+                  <img src={TicketIcon} alt="航程图标"></img>
+                </div>
+                <div className="address_list">
+                  <span>终</span>
+                  <p>
+                    {this.state.detailData.segments
+                      ? this.$moment(
+                          this.state.detailData.segments[0].arrive_time
+                        ).format("HH:mm")
+                      : "-"}
+                  </p>
+                  {this.state.detailData.segments
+                    ? this.state.detailData.segments[0].to_city
+                    : "-"}
+                </div>
+              </div>
+
+              <div className="info_time">
+                行程：
+                {this.state.detailData.segments
+                  ? `${Math.floor(
+                      Number(this.state.detailData.segments[0].travel_time) / 60
+                    )}小时${Math.floor(
+                      Number(this.state.detailData.segments[0].travel_time) % 60
+                    )}分`
+                  : "-"}
+              </div>
+
+              <div className="info_cabin">
+                席别：
+                {this.state.detailData.segments
+                  ? this.state.detailData.segments[0].seat
+                  : "-"}
+              </div>
+            </div>
+          </div>
+
+          <div className="detail_template detail_passenger">
+            <div className="template_title">
+              <p>乘客信息</p>
+              {this.state.detailData.ticket_number ? (
+                <div className="title_option">
+                  取票号{this.state.detailData.ticket_number}
+                </div>
+              ) : (
+                ""
+              )}
+            </div>
+            <div className="passenger_main">
+              {this.state.detailData.passengers &&
+                this.state.detailData.passengers.map((item, index) => (
+                  <div className="main_list" key={index}>
+                    {item.PassengerType === "ADT" ? (
+                      <>
+                        <div className="list_type">成</div>
+                        <div className="list_item">
+                          <p className="list_title">姓名</p>
+                          {item.PassengerName}
+                        </div>
+                        <div className="list_item">
+                          <p className="list_title">身份证</p>
+                          {item.CredentialNo}
+                        </div>
+                        <div className="list_item">
+                          <p className="list_title">手机号</p>
+                          {item.phone}
+                        </div>
+                        {this.state.detailData.status !== 1 &&
+                        this.state.detailData.status !== 6 ? (
+                          <>
+                            <div className="list_item">
+                              <p className="list_title">票号</p>
+                              {item.ticket_no}
+                            </div>
+                            <div className="list_item">
+                              <p className="list_title">座位</p>
+                              {item.seat_info}
+                            </div>
+                          </>
+                        ) : (
+                          ""
+                        )}
+                      </>
+                    ) : item.PassengerType === "CHD" ? (
+                      <>
+                        <div className="list_type">童</div>
+                        <div className="list_item">
+                          <p className="list_title">姓名</p>
+                          {item.PassengerName}
+                        </div>
+                        <div className="list_item">
+                          <p className="list_title">出生日期</p>
+                          {item.Birthday}
+                        </div>
+                        {this.state.detailData.status !== 1 &&
+                        this.state.detailData.status !== 6 ? (
+                          <>
+                            <div className="list_item">
+                              <p className="list_title">票号</p>
+                              {item.ticket_no}
+                            </div>
+                            <div className="list_item">
+                              <p className="list_title">座位</p>
+                              {item.seat_info}
+                            </div>
+                          </>
+                        ) : (
+                          ""
+                        )}
+                      </>
+                    ) : (
+                      ""
+                    )}
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          <div className="detail_template detail_insurance">
+            <div className="template_title">
+              <p>
+                <img src={InsuranceIcon} alt="保险图标"></img>
+                保险服务
+              </p>
+            </div>
+            <div className="insurance_main">
+              {String(this.state.detailData.insurance_msg).length > 10 ? (
+                <>
+                  <div className="main_title">已选保险</div>
+                  <div className="main_info">
+                    {this.state.detailData.insurance_msg
+                      ? this.state.detailData.insurance_msg.insure_desc
+                      : "-"}
+                  </div>
+                  <div className="main_price">
+                    <span>
+                      &yen;
+                      {this.state.detailData.insurance_msg
+                        ? this.state.detailData.insurance_msg.default_dis_price
+                        : "-"}
+                    </span>
+                    元/人
+                  </div>
+                </>
+              ) : (
+                "未购买保险"
+              )}
+            </div>
+          </div>
+
+          <div className="detail_template detail_price_info">
+            <div className="template_title">
+              <p>价格明细</p>
+            </div>
+            <div className="price_info_main">
+              <Table
+                size="small"
+                pagination={false}
+                dataSource={this.state.detailData.passengers}
+                rowKey="id"
+              >
+                <Column title="乘车人" dataIndex="PassengerName" />
+                <Column
+                  title="乘客类型"
+                  dataIndex="PassengerType"
+                  render={(text) =>
+                    text === "ADT" ? "成人" : text === "CHD" ? "儿童" : text
+                  }
+                />
+                <Column title="票面价" dataIndex="ticket_price" />
+                <Column title="服务费" dataIndex="service_price" />
+                <Column title="保险" dataIndex="insurance_price" />
+                <Column title="结算价" dataIndex="total_price" />
+              </Table>
+            </div>
+          </div>
+
+          <div className="detail_template detail_order_info">
+            <div className="template_title">
+              <p>订单信息</p>
+            </div>
+            <div className="order_info_main">
+              <div className="main_list">
+                联系人：
+                {this.state.detailData.book_user_name || "-"}
+              </div>
+              <div className="main_list">
+                手机号：{this.state.detailData.phone || "-"}
+              </div>
+              <div className="main_list">邮箱：{this.state.detailData.mail || "-"}</div>
+            </div>
+            <div className="order_info_main">
+              <div className="main_list remark">
+                <p>备注：</p>
+                {!this.state.detailData.remark ? (
+                  <Input
+                    placeholder="请输入"
+                    value={this.state.orderRemark}
+                    onChange={this.changeRemark}
+                  ></Input>
+                ) : (
+                  this.state.detailData.remark
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="detail_bottom_box">
+            <Button className="back_btn" onClick={() => this.jumpBack()}>
+              返回
+            </Button>
+            {!this.state.detailData.remark ? (
+              <Button
+                loading={this.state.remarkLoading}
+                className="detail_btn"
+                onClick={() => this.saveRemarkBtn()}
+              >
+                保存
+              </Button>
+            ) : (
+              ""
+            )}
+            {this.state.detailData.status === 1 || this.state.detailData.status === 2 ? (
+              <Button className="detail_btn" onClick={() => this.orderCancel("取消")}>
+                取消订单
+              </Button>
+            ) : (
+              ""
+            )}
+            {(this.state.detailData.status === 3 || this.state.detailData.status === 4) &&
+            this.state.detailData.refund_order === null ? (
+              <Button className="detail_btn" onClick={() => this.jumpRefundPage()}>
+                退票
+              </Button>
+            ) : (
+              ""
+            )}
+            {this.state.detailData.status === 4 &&
+            this.state.detailData.change_order === null ? (
+              <Button className="detail_btn" onClick={() => this.jumpChangePage()}>
+                改签
+              </Button>
+            ) : (
+              ""
+            )}
+          </div>
+
+          <CancelOrderModal
+            isSegmentsModalType={this.state.isSegmentsModalType}
+            isSegmentsModal={this.state.isSegmentsModal}
+            isSegmentsModalData={this.state.isSegmentsModalData}
+            isSegmentsModalBtnStatus={this.state.isSegmentsModalBtnStatus}
+            submitModalBtn={() => this.submitModalBtn()}
+            closeModalBtn={() => this.closeModalBtn()}
+          ></CancelOrderModal>
+        </Spin>
       </div>
     );
   }
