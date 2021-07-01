@@ -2,7 +2,7 @@
  * @Description: 退票列表
  * @Author: mzr
  * @Date: 2021-06-21 16:16:31
- * @LastEditTime: 2021-06-23 16:59:54
+ * @LastEditTime: 2021-07-01 11:11:22
  * @LastEditors: mzr
  */
 import React, { Component } from 'react'
@@ -12,6 +12,8 @@ import './RefundList.scss'
 import { Base64 } from "js-base64";
 
 import { Button, Pagination, Table, message} from "antd";
+
+import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
 
 const { Column } = Table;
 
@@ -29,7 +31,12 @@ export default class index extends Component {
 
       orderSearch: {
         status:"", // 退票状态
-      }
+      },
+
+      isSegmentsModal: false, // 取消订单弹窗
+      isSegmentsModalData: {}, // 弹窗数据
+      isSegmentsModalType: "", // 弹窗状态
+      isSegmentsModalBtnStatus: false, // 弹窗按钮状态
     }
   }
 
@@ -84,7 +91,7 @@ export default class index extends Component {
 
   // 列表分页切换
   changePagination = async (page, pageSize) => {
-    let data = this.state.orderSearch;
+    let data = this.state.orderSearch
     data.page = page;
     data.limit = pageSize;
     await this.setState({
@@ -96,6 +103,56 @@ export default class index extends Component {
   // 跳转退票详情
   jumpDetail(val) {
     this.props.history.push({ pathname: "/refundDetail/" + val.refund_no });
+  }
+
+  // 打开确认取消弹窗
+  orderCancel(val) {
+    this.setState({
+      isSegmentsModal: true,
+      isSegmentsModalType: "取消",
+      isSegmentsModalData: val,
+      isSegmentsModalBtnStatus: false,
+    });
+  }
+
+  // 关闭取消订单弹窗
+  closeModalBtn() {
+    this.setState({
+      isSegmentsModal: false,
+    });
+  }
+
+  // 取消订单提交
+  submitModalBtn() {
+    this.setState({
+      isSegmentsModalBtnStatus: true,
+    });
+    let val = this.state.isSegmentsModalData;
+    console.log('退票',val)
+    let data = {
+      channel: "Di", //类型：String  必有字段  备注：渠道
+      source: val.source, //类型：String  必有字段  备注：数据源
+      order: {
+        //类型：Object  必有字段  备注：订单信息
+        order_no: val.train_order_no, //类型：String  必有字段  备注：订单号
+        out_trade_no: val.out_trade_no, //类型：String  必有字段  备注：外部订单号
+      },
+    };
+    this.$axios.post("/train/order/cancel", data).then((res) => {
+      this.setState({
+        isSegmentsModalBtnStatus: false,
+      });
+      if (res.code === 0) {
+        message.success(res.data);
+        this.setState({
+          isSegmentsModal: false,
+        });
+        this.getRefundList();
+        this.getRefundDataCount();
+      } else {
+        message.warning(res.msg);
+      }
+    });
   }
 
   render() {
@@ -277,7 +334,16 @@ export default class index extends Component {
             </div>
           </div>
         </div>
-      
+        
+        <CancelOrderModal
+          isSegmentsModalType={this.state.isSegmentsModalType}
+          isSegmentsModal={this.state.isSegmentsModal}
+          isSegmentsModalData={this.state.isSegmentsModalData}
+          isSegmentsModalBtnStatus={this.state.isSegmentsModalBtnStatus}
+          submitModalBtn={() => this.submitModalBtn()}
+          closeModalBtn={() => this.closeModalBtn()}
+        ></CancelOrderModal>
+
       </div>
     )
   }

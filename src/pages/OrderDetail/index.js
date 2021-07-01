@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-06-23 17:56:10
+ * @LastEditTime: 2021-07-01 11:30:03
  * @LastEditors: mzr
  */
 
@@ -16,6 +16,8 @@ import InsuranceIcon from "../../static/insurance_icon.png"; // 保险图标
 import ViaStopPopover from "../../components/viaStopPopover"; // 经停站组件
 
 import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
+
+import OccupySeatModal from "../../components/occupySeatModal"; // 占座弹窗
 
 import { Base64 } from "js-base64";
 
@@ -38,6 +40,10 @@ export default class index extends Component {
       isSegmentsModalData: {}, // 弹窗数据
       isSegmentsModalType: "", // 弹窗状态
       isSegmentsModalBtnStatus: false, // 弹窗按钮状态
+
+      isOccupyModal: false, // 占座弹窗
+      isOccupyStatus: "success", // 占座弹窗状态  success 占座中  fail 占座失败
+
     };
   }
 
@@ -182,6 +188,21 @@ export default class index extends Component {
         message.warning(res.msg);
       }
     });
+  }
+
+  // 打开占座弹窗
+  openOccupy() {
+    this.setState({
+      isOccupyModal: true,
+      isOccupyStatus: "success"
+    })
+  }
+
+  // 取消占座弹窗
+  closeOccupy() {
+    this.setState({
+      isOccupyModal: false
+    })
   }
 
   // 保存备注
@@ -539,7 +560,7 @@ export default class index extends Component {
           )}
         </div>
 
-        <div className="detail_bottom_box">
+        <div className="detail_bottom_boxdetail_bottom_box">
           {!this.state.detailData.remark ? (
             <Button className="detail_btn" onClick={()=> this.saveRemarkBtn()}>保存</Button>
           ) : (
@@ -566,6 +587,7 @@ export default class index extends Component {
           ) : (
             ""
           )}
+          <Button className="detail_btn" onClick={() => this.openOccupy()}>占座</Button>
         </div>
 
         <CancelOrderModal
@@ -576,6 +598,13 @@ export default class index extends Component {
           submitModalBtn={() => this.submitModalBtn()}
           closeModalBtn={() => this.closeModalBtn()}
         ></CancelOrderModal>
+
+        {/* 占座 */}
+        <OccupySeatModal
+          isOccupyModal={this.state.isOccupyModal}
+          isOccupyStatus={this.state.isOccupyStatus}
+          closeOccupy={() => this.closeOccupy()}
+        ></OccupySeatModal>
       </div>
     );
   }

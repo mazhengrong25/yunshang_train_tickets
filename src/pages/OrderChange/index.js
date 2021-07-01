@@ -2,8 +2,8 @@
  * @Description: 改签详情
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
- * @LastEditTime: 2021-06-18 16:04:13
- * @LastEditors: wish.WuJunLong
+ * @LastEditTime: 2021-06-24 14:18:52
+ * @LastEditors: mzr
  */
 
 import React, { Component } from "react";
@@ -27,7 +27,7 @@ export default class index extends Component {
 
       selectPassengerList: [], // 选中乘客
 
-      newTicketTime: null, // 新车次时间
+      newTicketTime: null, // 新车次时
       newTicketModal: false, // 新车次弹窗
       newChangeTicketData: {}, // 查询车次完整数据
       changeTicketData: {}, // 新车次信息
