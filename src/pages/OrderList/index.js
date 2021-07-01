@@ -2,7 +2,7 @@
  * @Description: 订单列表
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-06-21 10:42:23
+ * @LastEditTime: 2021-07-01 12:04:40
  * @LastEditors: wish.WuJunLong
  */
 
@@ -188,9 +188,9 @@ export default class index extends Component {
   // 退票单跳转
   jumpRefundPage(val) {
     this.props.history.push({
-      pathname:"/orderRefund/" + val.order_no,
-      query: { changeType: true},
-    })
+      pathname: "/orderRefund/" + val.order_no,
+      query: { changeType: true },
+    });
   }
 
   render() {
@@ -271,10 +271,11 @@ export default class index extends Component {
                     ) : (
                       ""
                     )}
-                    {(render.status === 3 || render.status === 4) &&
-                    render.refund_order === null ? (
-                      <Button 
-                        size="small" 
+                    {(render.status === 4 || render.status === 7) &&
+                    render.refund_order === null &&
+                    render.change_order === null ? (
+                      <Button
+                        size="small"
                         className="option_refund"
                         onClick={() => this.jumpRefundPage(render)}
                       >
@@ -283,7 +284,9 @@ export default class index extends Component {
                     ) : (
                       ""
                     )}
-                    {render.status === 4 && render.change_order === null ? (
+                    {render.status === 4 &&
+                    render.change_order === null &&
+                    render.refund_order === null ? (
                       <Button
                         size="small"
                         className="option_cancel"
@@ -371,8 +374,18 @@ export default class index extends Component {
                           ? "#FF0000"
                           : text === 3
                           ? "#5AB957"
-                          : text === 4
+                          : text === 4 &&
+                            render.refund_order === null &&
+                            render.change_order === null
                           ? "#0070E2"
+                          : text === 4 &&
+                            render.refund_order === null &&
+                            render.change_order !== null
+                          ? "#fb9826"
+                          : text === 4 &&
+                            render.refund_order !== null &&
+                            render.change_order === null
+                          ? "#FF0000"
                           : text === 5
                           ? "#333333"
                           : text === 6
@@ -388,8 +401,14 @@ export default class index extends Component {
                       "待支付"
                     ) : text === 3 ? (
                       "待出票"
-                    ) : text === 4 ? (
+                    ) : text === 4 &&
+                      render.refund_order === null &&
+                      render.change_order === null ? (
                       "已出票"
+                    ) : text === 4 && render.refund_order !== null ? (
+                      "已退票"
+                    ) : text === 4 && render.change_order !== null ? (
+                      "已改签"
                     ) : text === 5 ? (
                       "已取消"
                     ) : text === 6 ? (
@@ -400,8 +419,10 @@ export default class index extends Component {
                       >
                         <span style={{ cursor: "pointer" }}>占座失败</span>
                       </Popover>
-                    ) : text === 7 ? (
+                    ) : text === 7 && render.refund_order === null ? (
                       "出票失败"
+                    ) : text === 7 && render.refund_order !== null ? (
+                      "已退票"
                     ) : (
                       text
                     )}

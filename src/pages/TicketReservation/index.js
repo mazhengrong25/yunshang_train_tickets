@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-06-22 15:02:46
+ * @LastEditTime: 2021-07-01 11:53:04
  * @LastEditors: wish.WuJunLong
  */
 
@@ -637,9 +637,18 @@ export default class index extends Component {
     let data = this.state.checkedPassenger;
     let contact = this.state.contactMessage;
 
-    if (!data[0].name || !data[0].cert_no || !contact.name || !contact.phone) {
-      return message.warning("请完善信息后创建订单");
+    // let checkStatus = false;
+
+    for (let i = 0; i < data.length; i++) {
+      if (!data[i].name || !data[i].cert_no || !data[i].phone) {
+        return message.warning("请完善乘客信息后创建订单");
+      }
     }
+
+    if (!contact.name || !contact.phone) {
+      return message.warning("请完善联系人信息后创建订单");
+    }
+
     let newData = [];
     for (let i = 0; i < data.length; i++) {
       data[i]["insurance"] = true;

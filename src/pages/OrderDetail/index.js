@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-06-25 16:46:53
+ * @LastEditTime: 2021-07-01 12:05:20
  * @LastEditors: wish.WuJunLong
  */
 
@@ -271,8 +271,18 @@ export default class index extends Component {
                           ? "#FF0000"
                           : this.state.detailData.status === 3
                           ? "#5AB957"
-                          : this.state.detailData.status === 4
+                          : this.state.detailData.status === 4 &&
+                            this.state.detailData.refund_order === null &&
+                            this.state.detailData.change_order === null
                           ? "#0070E2"
+                          : this.state.detailData.status === 4 &&
+                            this.state.detailData.refund_order === null &&
+                            this.state.detailData.change_order !== null
+                          ? "#fb9826"
+                          : this.state.detailData.status === 4 &&
+                            this.state.detailData.refund_order !== null &&
+                            this.state.detailData.change_order === null
+                          ? "#FF0000"
                           : this.state.detailData.status === 5
                           ? "#333333"
                           : this.state.detailData.status === 6
@@ -288,8 +298,16 @@ export default class index extends Component {
                       "待支付"
                     ) : this.state.detailData.status === 3 ? (
                       "待出票"
-                    ) : this.state.detailData.status === 4 ? (
+                    ) : this.state.detailData.status === 4 &&
+                      this.state.detailData.refund_order === null &&
+                      this.state.detailData.change_order === null ? (
                       "已出票"
+                    ) : this.state.detailData.status === 4 &&
+                      this.state.detailData.refund_order !== null ? (
+                      "已退票"
+                    ) : this.state.detailData.status === 4 &&
+                      this.state.detailData.change_order !== null ? (
+                      "已改签"
                     ) : this.state.detailData.status === 5 ? (
                       "已取消"
                     ) : this.state.detailData.status === 6 ? (
@@ -300,8 +318,12 @@ export default class index extends Component {
                       >
                         <span style={{ cursor: "pointer" }}>占座失败</span>
                       </Popover>
-                    ) : this.state.detailData.status === 7 ? (
+                    ) : this.state.detailData.status === 7 &&
+                      this.state.detailData.refund_order === null ? (
                       "出票失败"
+                    ) : this.state.detailData.status === 7 &&
+                      this.state.detailData.refund_order !== null ? (
+                      "已退票"
                     ) : (
                       this.state.detailData.status || "-"
                     )}
@@ -619,8 +641,9 @@ export default class index extends Component {
             ) : (
               ""
             )}
-            {(this.state.detailData.status === 3 || this.state.detailData.status === 4) &&
-            this.state.detailData.refund_order === null ? (
+            {(this.state.detailData.status === 4 || this.state.detailData.status === 7) &&
+            this.state.detailData.refund_order === null &&
+            this.state.detailData.change_order === null ? (
               <Button className="detail_btn" onClick={() => this.jumpRefundPage()}>
                 退票
               </Button>
@@ -628,7 +651,8 @@ export default class index extends Component {
               ""
             )}
             {this.state.detailData.status === 4 &&
-            this.state.detailData.change_order === null ? (
+            this.state.detailData.change_order === null &&
+            this.state.detailData.refund_order === null ? (
               <Button className="detail_btn" onClick={() => this.jumpChangePage()}>
                 改签
               </Button>
