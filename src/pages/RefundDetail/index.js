@@ -2,7 +2,7 @@
  * @Description: 退票详情
  * @Author: mzr
  * @Date: 2021-06-21 16:18:48
- * @LastEditTime: 2021-06-23 18:41:06
+ * @LastEditTime: 2021-07-01 11:14:43
  * @LastEditors: mzr
  */
 import React, { Component } from 'react'
@@ -17,7 +17,6 @@ import ViaStopPopover from "../../components/viaStopPopover"; // 经停站组件
 import "./RefundDetail.scss";
 
 const { Column } = Table;
-
 export default class index extends Component {
   constructor(props) {
     super(props);
