@@ -2,7 +2,7 @@
  * @Description: 车票查询
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 11:06:03
- * @LastEditTime: 2021-06-18 10:53:29
+ * @LastEditTime: 2021-06-25 16:14:53
  * @LastEditors: wish.WuJunLong
  */
 
@@ -336,12 +336,14 @@ export default class index extends Component {
     await this.setState({
       ticketMessage: data,
     });
-    let url = `/ticketInquiry?departure=${this.state.ticketMessage.departure}&arrive=${
-      this.state.ticketMessage.arrive
-    }&departure_date=${this.$moment(this.state.ticketMessage.departure_date).format(
-      "YYYY-MM-DD"
-    )}`;
-    await this.props.history.push(encodeURI(url));
+    if (!this.props.type) {
+      let url = `/ticketInquiry?departure=${this.state.ticketMessage.departure}&arrive=${
+        this.state.ticketMessage.arrive
+      }&departure_date=${this.$moment(this.state.ticketMessage.departure_date).format(
+        "YYYY-MM-DD"
+      )}`;
+      await this.props.history.push(encodeURI(url));
+    }
     await this.getTicketList();
   }
 

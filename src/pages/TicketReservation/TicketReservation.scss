@@ -268,7 +268,7 @@
           &:not(.adt_name) {
             margin-left: 24px;
           }
-        
+
           .item_title {
             font-size: 14px;
             font-weight: 400;
@@ -294,9 +294,9 @@
               margin-right: 7px;
             }
           }
-          &.chd_name{
-            .item_input{
-              &::after{
+          &.chd_name {
+            .item_input {
+              &::after {
                 display: none !important;
               }
             }
@@ -304,19 +304,24 @@
           &.adt_name {
             .item_input {
               position: relative;
-              &::after {
-                content: "";
-                pointer-events: none;
-                display: block;
-                background: url("../../static/ADT_name_icon.png") no-repeat center center;
-                background-size: contain;
+              .remark_icon {
                 width: 20px;
                 height: 20px;
                 position: absolute;
                 right: 0;
                 top: 0;
                 z-index: 9;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                img {
+                  width: 100%;
+                  height: 100%;
+                  object-fit: contain;
+                }
               }
+
+              
             }
           }
         }
@@ -807,6 +812,42 @@
           border-radius: 19px;
         }
       }
+    }
+  }
+}
+
+
+
+.passenger_remark_popover {
+  .ant-popover-inner-content{
+    padding: 0;
+  }
+  .passenger_remark {
+    width: 200px;
+    padding-top: 15px;
+    .remark_title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333333;
+      padding: 0 15px;
+    }
+    .remark_message {
+      font-size: 14px;
+      font-weight: 400;
+      color: #333333;
+      padding: 0 15px;
+      margin: 10px 0;
+    }
+    .remark_btn {
+      height: 40px;
+      width: 100%;
+      border-top: 1px solid #f2f2f2;
+      text-align: center;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 400;
+      color: #0070e2;
+      line-height: 40px;
     }
   }
 }

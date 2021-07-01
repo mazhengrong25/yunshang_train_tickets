@@ -2,12 +2,9 @@
  * @Description: 改签详情
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
- * @LastEditTime: 2021-06-24 14:18:52
  * @LastEditors: mzr
+ * @LastEditTime: 2021-07-01 14:59:01
  */
-
-import React, { Component } from "react";
-
 import { Button, message, Table, Popover, DatePicker, Modal } from "antd";
 
 import TicketSearchPage from "../TicketInquiry/index"; // 机票列表
@@ -183,9 +180,14 @@ export default class index extends Component {
       isSegmentsModalBtnStatus: true,
     });
     let passengerId = [];
+    let newsSeat_info = {};
     this.state.selectPassengerList.forEach((item) => {
       passengerId.push(item.id);
+      if (item.id && item.seat_info) { 
+        newsSeat_info[item.id] = item.seat_info;
+      }
     });
+
     let data = {
       channel: "Di", //类型：String  必有字段  备注：渠道
       source: "YunKu", //类型：String  必有字段  备注：数据源
@@ -200,6 +202,7 @@ export default class index extends Component {
       train: this.state.changeTicketData,
       segment_id: this.state.detailData.segments[0].id, //类型：Number  必有字段  备注：原航段ID
       passengers: passengerId,
+      seat_info: newsSeat_info,
       price: this.state.newChangeTicketData.price, //类型：Number  必有字段  备注：票价
     };
 
@@ -211,7 +214,9 @@ export default class index extends Component {
           isSegmentsModalBtnStatus: false,
           isSegmentsModal: false,
         });
+        this.getDetailData();
         message.success(res.msg);
+        this.props.history.push({ pathname: "/changeDetail/" + res.data.change_order_no });
       } else {
         this.setState({
           isSegmentsModalBtnStatus: false,
