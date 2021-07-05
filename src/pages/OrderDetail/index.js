@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-07-01 15:13:51
+ * @LastEditTime: 2021-07-01 16:58:53
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -15,8 +15,6 @@ import InsuranceIcon from "../../static/insurance_icon.png"; // 保险图标
 import ViaStopPopover from "../../components/viaStopPopover"; // 经停站组件
 
 import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
-
-import OccupySeatModal from "../../components/occupySeatModal"; // 占座弹窗
 
 import { Base64 } from "js-base64";
 
@@ -40,7 +38,6 @@ export default class index extends Component {
       isSegmentsModalData: {}, // 弹窗数据
       isSegmentsModalType: "", // 弹窗状态
       isSegmentsModalBtnStatus: false, // 弹窗按钮状态
-
     };
   }
   async componentDidMount() {
@@ -196,20 +193,6 @@ export default class index extends Component {
     });
   }
 
-  // 打开占座弹窗
-  openOccupy() {
-    this.setState({
-      isOccupyModal: true,
-      isOccupyStatus: "success"
-    })
-  }
-
-  // 取消占座弹窗
-  closeOccupy() {
-    this.setState({
-      isOccupyModal: false
-    })
-  }
   // 返回订单列表
   jumpBack() {
     try {
@@ -352,7 +335,7 @@ export default class index extends Component {
                     <Button
                       className="jump_order_pay"
                       type="link"
-                      href={`http://192.168.0.187/pay/${this.imageBase(
+                      href={`${this.$parentUrl}pay/${this.imageBase(
                         this.state.detailData.order_no
                       )}`}
                     >
@@ -672,13 +655,6 @@ export default class index extends Component {
               ""
             )}
           </div>
-
-                  {/* 占座 */}
-        <OccupySeatModal
-          isOccupyModal={this.state.isOccupyModal}
-          isOccupyStatus={this.state.isOccupyStatus}
-          closeOccupy={() => this.closeOccupy()}
-        ></OccupySeatModal>
 
           <CancelOrderModal
             isSegmentsModalType={this.state.isSegmentsModalType}

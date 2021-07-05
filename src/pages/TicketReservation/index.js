@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-01 11:53:04
+ * @LastEditTime: 2021-07-01 17:41:45
  * @LastEditors: wish.WuJunLong
  */
 
@@ -33,10 +33,16 @@ import WarningIcon from "../../static/warn_icon.png"; // 警告图标
 
 import PassengerRemark from "../../static/ADT_name_icon.png"; // 乘客备注
 
+import OccupySeatModal from "../../components/occupySeatModal"; // 占座弹窗
+
+import { Base64 } from "js-base64";
+
 import "./TicketReservation.scss";
 
 const { Option } = Select;
 const { Column } = Table;
+
+let child;
 
 const newPassenger = {
   // 成人数据
@@ -107,6 +113,11 @@ export default class index extends Component {
       insuranceMessage: {}, // 保险信息
 
       submitStatus: false, // 订单信息提交
+
+      // 占座中弹窗
+      isOccupyNo: "",
+      isOccupyModal: false,
+      isOccupyStatus: 0,
     };
   }
 
@@ -483,7 +494,7 @@ export default class index extends Component {
     }
     let adtData = [];
     let chdData = [];
-    data.map((item) => {
+    data.forEach((item) => {
       if (item.type === "ADT") {
         adtData.push(item);
       } else {
@@ -917,11 +928,42 @@ export default class index extends Component {
         submitStatus: false,
       });
       if (res.code === 0) {
-        this.props.history.push({ pathname: "/orderDetail/" + res.data.order.order_no });
+        // this.props.history.push({ pathname: "/orderDetail/" + res.data.order.order_no });
+        this.openOccupy(res.data.order.order_no);
       } else {
         message.warning(res.msg || "订单创建失败，请重试");
       }
     });
+  }
+
+  // 占座成功
+  orderSuccess = () => {
+    window.location.href = `${this.$parentUrl}pay/${Base64.encode(
+      this.state.isOccupyNo
+    )}`;
+  };
+
+  onRef(ref) {
+    child = ref;
+  }
+
+  // 打开占座弹窗
+  async openOccupy(val) {
+    await this.setState({
+      isOccupyNo: val,
+      isOccupyModal: true,
+      isOccupyStatus: Math.floor(Math.random() * 100) + 150,
+    });
+    await child.startTime();
+  }
+
+  // 跳转详情
+  closeOccupy = () => {
+    this.props.history.push({ pathname: "/orderDetail/" + this.state.isOccupyNo })
+  }
+  // 重选车次
+  jumpOccupy = () => {
+    this.props.history.goBack()
   }
 
   render() {
@@ -1939,6 +1981,17 @@ export default class index extends Component {
             </div>
           )}
         </Modal>
+
+        {/* 占座弹窗 */}
+        <OccupySeatModal
+          isOccupyNo={this.state.isOccupyNo}
+          isOccupyModal={this.state.isOccupyModal}
+          isOccupyStatus={this.state.isOccupyStatus}
+          closeOccupy={() => this.closeOccupy()}
+          orderSuccess={() => this.orderSuccess()}
+          jumpOccupy={() => this.jumpOccupy()}
+          onRef={this.onRef}
+        ></OccupySeatModal>
       </div>
     );
   }

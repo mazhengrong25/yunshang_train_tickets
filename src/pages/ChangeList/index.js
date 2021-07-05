@@ -181,7 +181,7 @@ export default class index extends Component {
                         size="small"
                         className="option_pay"
                         type="link"
-                        href={`http://192.168.0.187/pay/${Base64.encode(
+                        href={`${this.$parentUrl}pay/${Base64.encode(
                           render.order_no
                         )}`}
                       >

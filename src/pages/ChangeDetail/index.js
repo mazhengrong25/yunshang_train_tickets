@@ -2,7 +2,7 @@
  * @Description: 改签详情
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
- * @LastEditTime: 2021-06-25 16:34:52
+ * @LastEditTime: 2021-07-01 18:08:53
  * @LastEditors: wish.WuJunLong
  */
 
@@ -139,7 +139,7 @@ export default class index extends Component {
                     <Button
                       className="jump_order_pay"
                       type="link"
-                      href={`http://192.168.0.187/pay/${this.imageBase(
+                      href={`${this.$parentUrl}pay/${this.imageBase(
                         this.state.detailData.order_no
                       )}`}
                     >

@@ -2,7 +2,7 @@
  * @Description: 入口页
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 10:36:06
- * @LastEditTime: 2021-06-22 14:19:22
+ * @LastEditTime: 2021-07-01 18:07:27
  * @LastEditors: wish.WuJunLong
  */
 import React from "react";
@@ -88,7 +88,7 @@ if (
   //   console.log(i);
   //   Cookie.remove(i);
   // }
-  localStorage.removeItem('ssotoken')
+  localStorage.removeItem("ssotoken");
 } else if (
   React.$filterUrlParams(window.location.search) &&
   React.$filterUrlParams(window.location.search).ssotoken !== "logout"
@@ -103,6 +103,10 @@ if (
   //   console.log(i, urlData[i]);
   //   Cookie.set(i, urlData[i]);
   // }
+}
+
+if (!React.Component.prototype.$parentUrl) {
+  React.Component.prototype.$parentUrl = document.referrer;
 }
 
 axios.defaults.headers.common["ssotoken"] = localStorage.getItem("ssotoken") || "";

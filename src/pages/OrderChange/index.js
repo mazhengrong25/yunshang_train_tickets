@@ -313,7 +313,7 @@ export default class index extends Component {
                   <Button
                     className="jump_order_pay"
                     type="link"
-                    href={`http://192.168.0.187/pay/${this.imageBase(
+                    href={`${this.$parentUrl}pay/${this.imageBase(
                       this.state.detailData.order_no
                     )}`}
                   >

@@ -2,79 +2,188 @@
  * @Description: 占座
  * @Author: mzr
  * @Date: 2021-06-29 14:23:13
- * @LastEditTime: 2021-07-01 14:31:56
- * @LastEditors: mzr
+ * @LastEditTime: 2021-07-01 17:53:07
+ * @LastEditors: wish.WuJunLong
+ *
+ * isOccupyNo: '',    订单号
+ * isOccupyModal: true || false,   Boolean 弹窗开关
+ * isOccupyStatus: 500 || null,    Number 剩余时间，null为错误
+ * function this.props.closeOccupy(),   关闭弹窗方法
+ *
  */
 
-import React, { Component } from 'react'
+import React, { Component } from "react";
 
-import { Modal , Button , Progress } from 'antd';
+import { Modal, Button, Statistic } from "antd";
 
-import OccupyFail from '../../static/occupy_fail.png';
+import OccupyFail from "../../static/occupy_fail.png";
+import OccupySuccess from "../../static/occupy_success.png";
 
-import './occupySeatModal.scss'
+import "./occupySeatModal.scss";
+
+const { Countdown } = Statistic;
+
+let timer;
+let orderStatus;
 
 export default class index extends Component {
-
   constructor(props) {
     super(props);
     this.state = {
+      remainingTime: new Date(), // 剩余时间
 
+      count: 0, // 剩余时间
+      remainingNumber: 0,
+
+      newOrderStatus: "",
     };
-
   }
+
   componentDidMount() {
-    
+    this.props.onRef(this);
+  }
+
+  startTime() {
+    this.setState({
+      remainingTime: this.$moment().add(this.props.isOccupyStatus, "s"),
+      count: this.props.isOccupyStatus,
+    });
+    timer = setInterval(() => {
+      this.setState({
+        count: --this.state.count,
+        remainingNumber:
+          ((this.props.isOccupyStatus - this.state.count) / this.props.isOccupyStatus) *
+          99,
+      });
+      if (this.state.count < 1) {
+        clearInterval(timer);
+      }
+    }, 1000);
+
+    orderStatus = setInterval(() => {
+      this.$axios.post("/train/order/detail/" + this.props.isOccupyNo).then((res) => {
+        if (res.code === 0) {
+          if (res.data.status === 2) {
+            this.setState({
+              remainingTime: new Date(),
+              newOrderStatus: res.data.status_remark,
+              remainingNumber: 100,
+            });
+            clearInterval(timer);
+            clearInterval(orderStatus);
+            setTimeout(() => {
+              this.props.orderSuccess();
+            }, 1000);
+          }
+          if (res.data.status === 6) {
+            this.setState({
+              remainingTime: new Date(),
+              newOrderStatus: res.data.status_remark,
+              remainingNumber: 100,
+              count: null,
+            });
+            clearInterval(timer);
+            clearInterval(orderStatus);
+          }
+        }
+      });
+    }, 10000);
+  }
+
+  jumpDetails() {
+    clearInterval(timer);
+    clearInterval(orderStatus);
+    this.props.closeOccupy();
+  }
+
+  jumpOccupy() {
+    clearInterval(timer);
+    clearInterval(orderStatus);
+    this.props.jumpOccupy();
+  }
+
+  componentWillUnmount() {
+    clearInterval(timer);
+    clearInterval(orderStatus);
   }
 
   render() {
     return (
-      <Modal 
+      <Modal
         width={600}
         title={false}
         wrapClassName="occupy_modal"
         footer={null}
+        keyboard={false}
+        closable={false}
+        centered={true}
+        maskClosable={false}
         visible={this.props.isOccupyModal}
         onCancel={() => this.props.closeOccupy()}
-      > 
-        {this.props.isOccupyStatus === 'success' ? (
-          
-
+      >
+        {this.state.count !== null ? (
           <div className="success_content">
             <div className="content_top">占座中,请稍后...</div>
             <div className="top_time">
               <div className="time_title">预计剩余时间</div>
-              <div className="time_value">2分57秒</div>
+
+              <div className="time_value">
+                <Countdown
+                  valueStyle={{ fontSize: 12, color: "#0070E2" }}
+                  value={this.state.remainingTime}
+                  format="m分ss秒"
+                />
+              </div>
             </div>
             <div className="content_process">
               <div className="process_item">
-                <div className="process_img"></div>
-                <div className="process_value">52%</div>
+                <p style={{ right: `${100 - this.state.remainingNumber}%` }}>
+                  <img
+                    className="occupy_icon"
+                    src={OccupySuccess}
+                    alt="火车进度条图标"
+                  ></img>
+                </p>
               </div>
+              <p
+                style={{ width: this.state.remainingNumber + "%" }}
+                className="remaining_number"
+              >
+                <span>{this.state.remainingNumber.toFixed(0)}%</span>
+              </p>
             </div>
-            <Progress percent={30} />
           </div>
-        ):(
-
+        ) : (
           <div className="fail_content">
-              <div className="fail_img"><img src={OccupyFail} alt="占座失败" /></div>
-              <div className="fail_title">占座失败</div>
-              <div className="fail_message">该车次余票不足，建议选择其它车次或席别购票</div>
+            <div className="fail_img">
+              <img src={OccupyFail} alt="占座失败" />
+            </div>
+            <div className="fail_title">占座失败</div>
+            <div className="fail_message">{this.state.newOrderStatus}</div>
           </div>
         )}
         {/* 底部按钮 */}
         <div className="occupy_buttons">
-          <Button 
-            className="button_cancel"
-            onClick={() => this.props.closeOccupy()}
-          >
-            {this.props.isOccupyStatus === 'success' ? '取消':'订单详情'}
-          </Button>
-          <Button className="button_detail" type="primary">
-            {this.props.isOccupyStatus === 'success' ? '订单详情':'重选车次'}
-          </Button>
+          {this.state.count !== null ? (
+            <Button className="button_detail" onClick={() => this.jumpDetails()}>
+              订单详情
+            </Button>
+          ) : (
+            <>
+              <Button className="button_cancel" onClick={() => this.jumpDetails()}>
+                订单详情
+              </Button>
+              <Button
+                className="button_detail"
+                type="primary"
+                onClick={() => this.jumpOccupy()}
+              >
+                重选车次
+              </Button>
+            </>
+          )}
         </div>
       </Modal>
-    )
+    );
   }
 }

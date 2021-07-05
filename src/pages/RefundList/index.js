@@ -2,8 +2,8 @@
  * @Description: 退票列表
  * @Author: mzr
  * @Date: 2021-06-21 16:16:31
- * @LastEditTime: 2021-07-01 11:11:22
- * @LastEditors: mzr
+ * @LastEditTime: 2021-07-01 18:08:38
+ * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from 'react'
 
@@ -225,7 +225,7 @@ export default class index extends Component {
                         size="small"
                         className="option_pay"
                         type="link"
-                        href={`http://192.168.0.187/pay/${Base64.encode(
+                        href={`${this.$parentUrl}pay/${Base64.encode(
                           render.order_no
                         )}`}
                       >
