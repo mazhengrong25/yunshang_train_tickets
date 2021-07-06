@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-06 14:01:34
+ * @LastEditTime: 2021-07-06 15:00:18
  * @LastEditors: wish.WuJunLong
  */
 
@@ -844,6 +844,11 @@ export default class index extends Component {
     let chdNumber = 0; // 儿童数量
     let adtPrice = 0; // 成人总价
     let chdPrice = 0; // 儿童总价
+
+    let service = this.state.reservationMessage.service_price
+      ? Number(this.state.reservationMessage.service_price)
+      : 0; // 服务费
+
     this.state.checkedPassenger.forEach((item) => {
       if (item.type === "ADT") {
         adtNumber += 1;
@@ -857,8 +862,14 @@ export default class index extends Component {
         }
       }
     });
-    adtPrice = adtNumber * price + atdInsNumber * insurancePrice;
-    chdPrice = chdNumber * (price / 2) + chdInsNumber * insurancePrice;
+
+    let adtService = adtNumber * service; // 成人服务费
+    let chdService = chdNumber * service; // 儿童服务费
+
+    // console.log(adtService)
+
+    adtPrice = adtNumber * price + atdInsNumber * insurancePrice + adtService;
+    chdPrice = chdNumber * (price / 2) + chdInsNumber * insurancePrice + chdService;
 
     total = adtPrice + chdPrice;
     return {
@@ -1862,7 +1873,10 @@ export default class index extends Component {
                 <div className="price_title">服务费</div>
                 <div className="price_info">
                   &yen;
-                  {0} x {this.totalPriceData().adtNumber}
+                  {this.state.reservationMessage.service_price
+                    ? this.state.reservationMessage.service_price
+                    : 0}
+                  x {this.totalPriceData().adtNumber}
                 </div>
               </div>
               <div className="list_price">
@@ -1900,7 +1914,10 @@ export default class index extends Component {
                   <div className="price_title">服务费</div>
                   <div className="price_info">
                     &yen;
-                    {0} x {this.totalPriceData().chdNumber}
+                    {this.state.reservationMessage.service_price
+                      ? this.state.reservationMessage.service_price
+                      : 0}{" "}
+                    x {this.totalPriceData().chdNumber}
                   </div>
                 </div>
                 <div className="list_price">
