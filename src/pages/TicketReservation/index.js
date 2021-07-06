@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-06 10:46:26
+ * @LastEditTime: 2021-07-06 11:02:31
  * @LastEditors: wish.WuJunLong
  */
 
@@ -1392,12 +1392,12 @@ export default class index extends Component {
                                 <div className="passenger_remark">
                                   <p className="remark_title">备注</p>
                                   <p className="remark_message">{item.remark}</p>
-                                  <div
+                                  {/* <div
                                     className="remark_btn"
                                     onClick={() => message.warning("功能开发中")}
                                   >
                                     修改
-                                  </div>
+                                  </div> */}
                                 </div>
                               }
                             >
