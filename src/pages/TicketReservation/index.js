@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-06 15:00:18
+ * @LastEditTime: 2021-07-06 15:06:58
  * @LastEditors: wish.WuJunLong
  */
 
@@ -590,6 +590,7 @@ export default class index extends Component {
     }
     console.log(data);
     this.setState({
+      selectCabinList: [],
       checkedPassenger: newData,
     });
   }
