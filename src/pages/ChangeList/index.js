@@ -2,8 +2,8 @@
  * @Description: 改签列表
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 09:26:48
- * @LastEditTime: 2021-06-21 16:58:26
- * @LastEditors: mzr
+ * @LastEditTime: 2021-07-06 11:12:27
+ * @LastEditors: wish.WuJunLong
  */
 
 import React, { Component } from "react";
@@ -11,6 +11,8 @@ import React, { Component } from "react";
 import { Button, Pagination, Table, Popover, message } from "antd";
 
 import "./ChangeList.scss";
+
+import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
 
 import { Base64 } from "js-base64";
 
@@ -20,7 +22,7 @@ export default class index extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      orderStatusList: ["全部","待支付", "改签中", "已改签",'已取消'],
+      orderStatusList: ["全部", "待支付", "改签中", "已改签", "已取消"],
       orderStatusActive: "全部",
       orderNumberData: {}, // 订单状态数量
       orderList: [], // 订单列表
@@ -45,6 +47,11 @@ export default class index extends Component {
       },
 
       tableLoading: true, //  表格加载
+
+      isSegmentsModal: false, // 取消订单弹窗
+      isSegmentsModalData: {}, // 弹窗数据
+      isSegmentsModalType: "", // 弹窗状态
+      isSegmentsModalBtnStatus: false, // 弹窗按钮状态
     };
   }
 
@@ -67,7 +74,15 @@ export default class index extends Component {
   async isActiveHeader(val) {
     let data = this.state.orderSearch;
     data.status =
-      val === "待支付" ? "1" : val === "改签中" ? "2" : val === "已改签" ? "3" : val === "已取消" ? "5" : "";
+      val === "待支付"
+        ? "1"
+        : val === "改签中"
+        ? "2"
+        : val === "已改签"
+        ? "3"
+        : val === "已取消"
+        ? "5"
+        : "";
     await this.setState({
       orderSearch: data,
       orderStatusActive: val,
@@ -76,18 +91,17 @@ export default class index extends Component {
   }
 
   // 获取改签列表数量
-  getChangeDataCount(){
-    let data  = this.state.orderSearch
-    this.$axios.post('train/order/change/count',data)
-      .then(res => {
-        if(res.code === 0){
-          this.setState({
-            orderNumberData: res.data
-          })
-        }else {
-          message.warning(res.msg)
-        }
-      })
+  getChangeDataCount() {
+    let data = this.state.orderSearch;
+    this.$axios.post("train/order/change/count", data).then((res) => {
+      if (res.code === 0) {
+        this.setState({
+          orderNumberData: res.data,
+        });
+      } else {
+        message.warning(res.msg);
+      }
+    });
   }
 
   // 列表分页切换
@@ -103,12 +117,62 @@ export default class index extends Component {
 
   // 跳转详情页
   jumpDetail(val) {
-    console.log(val)
+    console.log(val);
     this.props.history.push({ pathname: "/changeDetail/" + val.change_no });
   }
 
+  // 打开确认取消弹窗
+  orderCancel(val) {
+    console.log(val);
+    this.setState({
+      isSegmentsModal: true,
+      isSegmentsModalType: "取消",
+      isSegmentsModalData: val,
+      isSegmentsModalBtnStatus: false,
+    });
+  }
+
+  // 关闭取消订单弹窗
+  closeModalBtn() {
+    this.setState({
+      isSegmentsModal: false,
+    });
+  }
+
+  // 取消订单提交
+  submitModalBtn() {
+    this.setState({
+      isSegmentsModalBtnStatus: true,
+    });
+    let val = this.state.isSegmentsModalData;
+    let data = {
+      channel: "Di", //类型：String  必有字段  备注：渠道
+      source: "YunKu", //类型：String  必有字段  备注：数据源
+      order: {
+        //类型：Object  必有字段  备注：订单信息
+        order_no: val.train_order_no, //类型：String  必有字段  备注：订单号
+        out_trade_no: val.out_trade_no, //类型：String  必有字段  备注：外部订单号
+      },
+    };
+    this.$axios.post("/train/order/change/cancel", data).then((res) => {
+      this.setState({
+        isSegmentsModalBtnStatus: false,
+      });
+      if (res.code === 0) {
+        message.success(res.data);
+        this.setState({
+          isSegmentsModal: false,
+        });
+        this.getChangeDataCount();
+        this.getChangeList();
+      } else {
+        message.warning(res.msg);
+      }
+    });
+  }
+
   componentDidMount() {
-    this.getChangeDataCount()
+    this.getChangeDataCount();
     this.getChangeList();
   }
 
@@ -181,9 +245,7 @@ export default class index extends Component {
                         size="small"
                         className="option_pay"
                         type="link"
-                        href={`${this.$parentUrl}pay/${Base64.encode(
-                          render.order_no
-                        )}`}
+                        href={`${this.$parentUrl}pay/${Base64.encode(render.order_no)}`}
                       >
                         付
                       </Button>
@@ -326,7 +388,15 @@ export default class index extends Component {
             </div>
           </div>
         </div>
-      
+
+        <CancelOrderModal
+          isSegmentsModalType={this.state.isSegmentsModalType}
+          isSegmentsModal={this.state.isSegmentsModal}
+          isSegmentsModalData={this.state.isSegmentsModalData}
+          isSegmentsModalBtnStatus={this.state.isSegmentsModalBtnStatus}
+          submitModalBtn={() => this.submitModalBtn()}
+          closeModalBtn={() => this.closeModalBtn()}
+        ></CancelOrderModal>
       </div>
     );
   }

@@ -247,6 +247,15 @@
           font-size: 14px;
           font-weight: 400;
           color: #333333;
+          &.remark {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            margin-top: 24px;
+            p {
+              flex-shrink: 0;
+            }
+          }
         }
       }
     }
@@ -317,6 +326,26 @@
       margin-right: 8px;
       &:hover {
         color: #000;
+      }
+    }
+    .detail_btn {
+      width: 120px;
+      height: 40px;
+      background: rgba(#000000, 0.08);
+      border: none;
+      font-size: 14px;
+      font-weight: 400;
+      color: #000000;
+      border-radius: 40px;
+      -webkit-border-radius: 40px;
+      -moz-border-radius: 40px;
+      -ms-border-radius: 40px;
+      -o-border-radius: 40px;
+      &:hover {
+        color: #000000;
+      }
+      &:not(:last-child) {
+        margin-right: 8px;
       }
     }
   }

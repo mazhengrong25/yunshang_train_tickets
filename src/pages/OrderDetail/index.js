@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-07-01 16:58:53
+ * @LastEditTime: 2021-07-06 11:21:56
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -38,6 +38,8 @@ export default class index extends Component {
       isSegmentsModalData: {}, // 弹窗数据
       isSegmentsModalType: "", // 弹窗状态
       isSegmentsModalBtnStatus: false, // 弹窗按钮状态
+
+      orderRemark: "", // 订单备注
     };
   }
   async componentDidMount() {
@@ -204,6 +206,7 @@ export default class index extends Component {
     }
   }
 
+    // 订单备注修改
   changeRemark = (val) => {
     this.setState({
       orderRemark: val.target.value,

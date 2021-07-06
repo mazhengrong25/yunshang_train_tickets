@@ -2,7 +2,7 @@
  * @Description: 退票列表
  * @Author: mzr
  * @Date: 2021-06-21 16:16:31
- * @LastEditTime: 2021-07-01 18:08:38
+ * @LastEditTime: 2021-07-06 11:20:56
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from 'react'
@@ -209,7 +209,7 @@ export default class index extends Component {
                     >
                       详
                     </Button>
-                    {render.status === 1 || render.status === 2 ? (
+                    {/* {render.status === 1 || render.status === 2 ? (
                       <Button
                         size="small"
                         className="option_cancel"
@@ -219,7 +219,7 @@ export default class index extends Component {
                       </Button>
                     ) : (
                       ""
-                    )}
+                    )} */}
                     {render.status === 2 ? (
                       <Button
                         size="small"
@@ -335,14 +335,14 @@ export default class index extends Component {
           </div>
         </div>
         
-        <CancelOrderModal
+        {/* <CancelOrderModal
           isSegmentsModalType={this.state.isSegmentsModalType}
           isSegmentsModal={this.state.isSegmentsModal}
           isSegmentsModalData={this.state.isSegmentsModalData}
           isSegmentsModalBtnStatus={this.state.isSegmentsModalBtnStatus}
           submitModalBtn={() => this.submitModalBtn()}
           closeModalBtn={() => this.closeModalBtn()}
-        ></CancelOrderModal>
+        ></CancelOrderModal> */}
 
       </div>
     )

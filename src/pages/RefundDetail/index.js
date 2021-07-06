@@ -2,17 +2,19 @@
  * @Description: 退票详情
  * @Author: mzr
  * @Date: 2021-06-21 16:18:48
- * @LastEditTime: 2021-07-01 11:14:43
- * @LastEditors: mzr
+ * @LastEditTime: 2021-07-06 11:25:08
+ * @LastEditors: wish.WuJunLong
  */
-import React, { Component } from 'react'
+import React, { Component } from "react";
 
-import { message, Table , Button } from "antd";
+import { message, Table, Button, Input } from "antd";
 
 import InsuranceIcon from "../../static/insurance_icon.png"; // 保险图标
 import TicketIcon from "../../static/trip_icon.png"; // 行程图标
 
 import ViaStopPopover from "../../components/viaStopPopover"; // 经停站组件
+
+import CancelOrderModal from "../../components/cancelOrderModal"; // 取消确认弹窗
 
 import "./RefundDetail.scss";
 
@@ -20,14 +22,21 @@ const { Column } = Table;
 export default class index extends Component {
   constructor(props) {
     super(props);
-    this.state= {
+    this.state = {
       orderNo: "", // 订单号
       detailData: {}, // 订单详情
-      
+
       viaStopPopoverMessage: {}, // 组装信息
       viaStopPopover: "", // 经停站信息弹窗
       viaStopData: [], // 经停站数据
-    }
+
+      isSegmentsModal: false, // 取消订单弹窗
+      isSegmentsModalData: {}, // 弹窗数据
+      isSegmentsModalType: "", // 弹窗状态
+      isSegmentsModalBtnStatus: false, // 弹窗按钮状态
+
+      orderRemark: "", // 订单备注
+    };
   }
 
   async componentDidMount() {
@@ -47,7 +56,7 @@ export default class index extends Component {
         this.setState({
           detailData: res.data,
         });
-        console.log("详情",this.state.detailData)
+        console.log("详情", this.state.detailData);
       }
     });
   }
@@ -99,9 +108,88 @@ export default class index extends Component {
       this.props.history.goBack();
     } catch (error) {
       this.props.history.push({
-        pathname: "/renfundList/",
+        pathname: "/refundList/",
       });
     }
+  }
+
+  // 订单备注修改
+  changeRemark = (val) => {
+    this.setState({
+      orderRemark: val.target.value,
+    });
+  };
+
+  // 保存备注
+  saveRemarkBtn() {
+    if (!this.state.orderRemark) {
+      return message.warning("请填写备注信息");
+    }
+    this.setState({
+      remarkLoading: true,
+    });
+    let data = {
+      order_no: this.state.orderNo,
+      remark: this.state.orderRemark,
+    };
+    this.$axios.post("/train/remark/save", data).then((res) => {
+      this.setState({
+        remarkLoading: false,
+      });
+      if (res.code === 0) {
+        message.success(res.data);
+        this.getDetailData();
+      } else {
+        message.warning(res.data);
+      }
+    });
+  }
+
+  // 打开取消订单弹窗
+  orderCancel(val) {
+    this.setState({
+      isSegmentsModal: true,
+      isSegmentsModalType: val,
+      isSegmentsModalData: this.state.detailData,
+      isSegmentsModalBtnStatus: false,
+    });
+  }
+
+  // 关闭取消订单弹窗
+  closeModalBtn() {
+    this.setState({
+      isSegmentsModal: false,
+    });
+  }
+
+  // 取消订单提交
+  submitModalBtn() {
+    this.setState({
+      isSegmentsModalBtnStatus: true,
+    });
+    let data = {
+      channel: this.state.detailData.channel, //类型：String  必有字段  备注：渠道
+      source: this.state.detailData.source, //类型：String  必有字段  备注：数据源
+      order: {
+        //类型：Object  必有字段  备注：订单信息
+        order_no: this.state.detailData.order_no, //类型：String  必有字段  备注：订单号
+        out_trade_no: this.state.detailData.out_trade_no, //类型：String  必有字段  备注：外部订单号
+      },
+    };
+    this.$axios.post("/train/order/change/cancel", data).then((res) => {
+      this.setState({
+        isSegmentsModalBtnStatus: false,
+      });
+      if (res.code === 0) {
+        message.success(res.data);
+        this.setState({
+          isSegmentsModal: false,
+        });
+        this.getDetailData();
+      } else {
+        message.warning(res.msg);
+      }
+    });
   }
 
   render() {
@@ -135,17 +223,15 @@ export default class index extends Component {
                         : "#333333",
                   }}
                 >
-                  {this.state.detailData.status === 1 ? (
-                    "退票中"
-                  ) : this.state.detailData.status === 2 ? (
-                    "已退票"
-                  ) : this.state.detailData.status === 3 ? (
-                    "已取消"
-                  ) : this.state.detailData.status === 5 ? (
-                    "退票失败"
-                  ) : (
-                    this.state.detailData.status || "-"
-                  )}
+                  {this.state.detailData.status === 1
+                    ? "退票中"
+                    : this.state.detailData.status === 2
+                    ? "已退票"
+                    : this.state.detailData.status === 3
+                    ? "已取消"
+                    : this.state.detailData.status === 5
+                    ? "退票失败"
+                    : this.state.detailData.status || "-"}
                 </span>
               </p>
               {this.state.detailData.status === 2 ? (
@@ -153,7 +239,9 @@ export default class index extends Component {
                   <span className="header_title">退票实际时间</span>
                   {this.state.detailData.refund_time || "-"}
                 </p>
-              ):("")}
+              ) : (
+                ""
+              )}
             </div>
           </div>
 
@@ -166,9 +254,11 @@ export default class index extends Component {
                 </p>
               </div>
             </div>
-          ):("")}
+          ) : (
+            ""
+          )}
         </div>
-        
+
         <div className="detail_template detail_ticket_info">
           <div className="template_title">
             <p>车次信息</p>
@@ -293,9 +383,9 @@ export default class index extends Component {
               dataSource={this.state.detailData.passengers}
               rowKey="id"
             >
-              <Column 
+              <Column
                 title="乘车人"
-                dataIndex="PassengerName" 
+                dataIndex="PassengerName"
                 render={(text) => text || "-"}
               />
               <Column
@@ -305,44 +395,40 @@ export default class index extends Component {
                   text === "ADT" ? "成人" : text === "CHD" ? "儿童" : text
                 }
               />
-              <Column 
-                title="座位号" 
-                dataIndex="seat_info" 
+              <Column
+                title="座位号"
+                dataIndex="seat_info"
                 render={(text) => text || "-"}
               />
-              <Column 
-                title="票号" 
-                dataIndex="ticket_no"
+              <Column title="票号" dataIndex="ticket_no" render={(text) => text || "-"} />
+              <Column
+                title="票面价"
+                dataIndex="ticket_price"
                 render={(text) => text || "-"}
               />
-              <Column 
-                title="票面价" 
-                dataIndex="ticket_price" 
+              <Column
+                title="服务费"
+                dataIndex="service_price"
                 render={(text) => text || "-"}
               />
-              <Column 
-                title="服务费" 
-                dataIndex="service_price" 
+              <Column
+                title="保险"
+                dataIndex="insurance_price"
                 render={(text) => text || "-"}
               />
-              <Column 
-                title="保险" 
-                dataIndex="insurance_price" 
+              <Column
+                title="结算价"
+                dataIndex="total_price"
                 render={(text) => text || "-"}
               />
-              <Column 
-                title="结算价" 
-                dataIndex="total_price" 
+              <Column
+                title="退票费"
+                dataIndex="refund_money"
                 render={(text) => text || "-"}
               />
-              <Column 
-                title="退票费" 
-                dataIndex="refund_money" 
-                render={(text) => text || "-"}
-              />
-              <Column 
-                title="退款金额" 
-                dataIndex="refund_total" 
+              <Column
+                title="退款金额"
+                dataIndex="refund_total"
                 render={(text) => text || "-"}
               />
             </Table>
@@ -373,14 +459,55 @@ export default class index extends Component {
                 : "-"}
             </div>
           </div>
+          <div className="order_info_main">
+            <div className="main_list remark">
+              <p>备注：</p>
+              {!this.state.detailData.remark ? (
+                <Input
+                  placeholder="请输入"
+                  value={this.state.orderRemark}
+                  onChange={this.changeRemark}
+                ></Input>
+              ) : (
+                this.state.detailData.remark
+              )}
+            </div>
+          </div>
         </div>
-        
+
         <div className="button_box">
           <Button className="back_btn" onClick={() => this.jumpBack()}>
             返回
           </Button>
+          {!this.state.detailData.remark ? (
+            <Button
+              loading={this.state.remarkLoading}
+              className="detail_btn"
+              onClick={() => this.saveRemarkBtn()}
+            >
+              保存
+            </Button>
+          ) : (
+            ""
+          )}
+          {/* {this.state.detailData.status === 1 || this.state.detailData.status === 2 ? (
+            <Button className="detail_btn" onClick={() => this.orderCancel("取消")}>
+              取消订单
+            </Button>
+          ) : (
+            ""
+          )} */}
         </div>
+
+        {/* <CancelOrderModal
+          isSegmentsModalType={this.state.isSegmentsModalType}
+          isSegmentsModal={this.state.isSegmentsModal}
+          isSegmentsModalData={this.state.isSegmentsModalData}
+          isSegmentsModalBtnStatus={this.state.isSegmentsModalBtnStatus}
+          submitModalBtn={() => this.submitModalBtn()}
+          closeModalBtn={() => this.closeModalBtn()}
+        ></CancelOrderModal> */}
       </div>
-    )
+    );
   }
 }

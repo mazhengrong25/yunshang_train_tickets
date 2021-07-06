@@ -2,13 +2,15 @@
  * @Description: 改签详情
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
- * @LastEditTime: 2021-07-01 18:08:53
+ * @LastEditTime: 2021-07-06 11:26:45
  * @LastEditors: wish.WuJunLong
  */
 
 import React, { Component } from "react";
 
-import { Button, message, Table, Popover, Spin } from "antd";
+import { Button, message, Table, Popover, Spin, Input } from "antd";
+
+import CancelOrderModal from "../../components/cancelOrderModal"; // 取消确认弹窗
 
 import "./ChangeDetail.scss";
 
@@ -26,6 +28,13 @@ export default class index extends Component {
       viaStopPopoverMessage: {}, // 组装信息
       viaStopPopover: "", // 经停站信息弹窗
       viaStopData: [], // 经停站数据
+
+      isSegmentsModal: false, // 取消订单弹窗
+      isSegmentsModalData: {}, // 弹窗数据
+      isSegmentsModalType: "", // 弹窗状态
+      isSegmentsModalBtnStatus: false, // 弹窗按钮状态
+
+      orderRemark: "", // 订单备注
     };
   }
 
@@ -61,6 +70,96 @@ export default class index extends Component {
       pageLoading: true,
     });
     await this.getDetailData();
+  }
+
+  // 返回订单列表
+  jumpBack() {
+    try {
+      this.props.history.goBack();
+    } catch (error) {
+      this.props.history.push({
+        pathname: "/changeList/",
+      });
+    }
+  }
+
+  // 订单备注修改
+  changeRemark = (val) => {
+    this.setState({
+      orderRemark: val.target.value,
+    });
+  };
+
+  // 保存备注
+  saveRemarkBtn() {
+    if (!this.state.orderRemark) {
+      return message.warning("请填写备注信息");
+    }
+    this.setState({
+      remarkLoading: true,
+    });
+    let data = {
+      order_no: this.state.orderNo,
+      remark: this.state.orderRemark,
+    };
+    this.$axios.post("/train/remark/save", data).then((res) => {
+      this.setState({
+        remarkLoading: false,
+      });
+      if (res.code === 0) {
+        message.success(res.data);
+        this.getDetailData();
+      } else {
+        message.warning(res.data);
+      }
+    });
+  }
+
+  // 打开取消订单弹窗
+  orderCancel(val) {
+    this.setState({
+      isSegmentsModal: true,
+      isSegmentsModalType: val,
+      isSegmentsModalData: this.state.detailData,
+      isSegmentsModalBtnStatus: false,
+    });
+  }
+
+  // 关闭取消订单弹窗
+  closeModalBtn() {
+    this.setState({
+      isSegmentsModal: false,
+    });
+  }
+
+  // 取消订单提交
+  submitModalBtn() {
+    this.setState({
+      isSegmentsModalBtnStatus: true,
+    });
+    let data = {
+      channel: this.state.detailData.channel, //类型：String  必有字段  备注：渠道
+      source: this.state.detailData.source, //类型：String  必有字段  备注：数据源
+      order: {
+        //类型：Object  必有字段  备注：订单信息
+        order_no: this.state.detailData.order_no, //类型：String  必有字段  备注：订单号
+        out_trade_no: this.state.detailData.out_trade_no, //类型：String  必有字段  备注：外部订单号
+      },
+    };
+    this.$axios.post("/train/order/change/cancel", data).then((res) => {
+      this.setState({
+        isSegmentsModalBtnStatus: false,
+      });
+      if (res.code === 0) {
+        message.success(res.data);
+        this.setState({
+          isSegmentsModal: false,
+        });
+        this.getDetailData();
+      } else {
+        message.warning(res.msg);
+      }
+    });
   }
 
   render() {
@@ -276,8 +375,55 @@ export default class index extends Component {
                   : "-"}
               </div>
             </div>
+            <div className="order_info_main">
+              <div className="main_list remark">
+                <p>备注：</p>
+                {!this.state.detailData.remark ? (
+                  <Input
+                    placeholder="请输入"
+                    value={this.state.orderRemark}
+                    onChange={this.changeRemark}
+                  ></Input>
+                ) : (
+                  this.state.detailData.remark
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="detail_bottom_box">
+            <Button className="back_btn" onClick={() => this.jumpBack()}>
+              返回
+            </Button>
+            {!this.state.detailData.remark ? (
+              <Button
+                loading={this.state.remarkLoading}
+                className="detail_btn"
+                onClick={() => this.saveRemarkBtn()}
+              >
+                保存
+              </Button>
+            ) : (
+              ""
+            )}
+            {this.state.detailData.status === 1 || this.state.detailData.status === 2 ? (
+              <Button className="detail_btn" onClick={() => this.orderCancel("取消")}>
+                取消订单
+              </Button>
+            ) : (
+              ""
+            )}
           </div>
         </Spin>
+
+        <CancelOrderModal
+          isSegmentsModalType={this.state.isSegmentsModalType}
+          isSegmentsModal={this.state.isSegmentsModal}
+          isSegmentsModalData={this.state.isSegmentsModalData}
+          isSegmentsModalBtnStatus={this.state.isSegmentsModalBtnStatus}
+          submitModalBtn={() => this.submitModalBtn()}
+          closeModalBtn={() => this.closeModalBtn()}
+        ></CancelOrderModal>
       </div>
     );
   }
