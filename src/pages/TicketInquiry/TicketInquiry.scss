@@ -184,6 +184,20 @@
       }
     }
     .ticket_table {
+      // 折叠样式
+      .not_ticket_list_info{
+        font-size: 14px;
+        text-align: center;
+        height: 60px;
+        line-height: 60px;
+        border-bottom: 1px solid #f0f0f0 ;
+        .ant-btn{
+          font-size: 14px;
+          color: rgb(30, 139, 249);
+        }
+      }
+
+
       // antd 表格样式修改
       .ant-table {
         font-size: 12px;
@@ -293,9 +307,9 @@
         }
       }
       .not_train_note {
-        text-align: center;
-        font-size: 18px;
-        letter-spacing: 4px;
+        text-align: left;
+        font-size: 14px;
+        letter-spacing: 1px;
         color: rgba(#000, 0.4);
         text-shadow: 0 2px rgba(#000, 0.05);
         font-weight: bold;

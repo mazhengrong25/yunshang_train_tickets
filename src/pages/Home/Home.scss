@@ -22,7 +22,7 @@
         display: flex;
         align-items: center;
         padding-left: 25px;
-        font-size: 15px;
+        font-size: 16px;
         font-weight: bold;
         color: #000000;
         border-radius: 5px 5px 0px 0px;
@@ -66,6 +66,13 @@
           display: flex;
           align-items: center;
           justify-content: space-between;
+          .submit_box_tool {
+            .ant-checkbox-wrapper {
+              font-size: 14px;
+              font-weight: 400;
+              color: #333333;
+            }
+          }
           .jump_btn {
             width: 120px;
             height: 34px;

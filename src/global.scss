@@ -30,3 +30,105 @@ img {
     }
   }
 }
+
+// 日期选择器图标
+.ant-picker {
+  &:hover {
+    border-color: #0070e2;
+  }
+  &.ant-picker-focused {
+    box-shadow: none;
+    border-color: #0070e2;
+  }
+  .ant-picker-input {
+    .ant-picker-suffix {
+      span {
+        width: 16px;
+        height: 16px;
+        background: url("./static/picker_icon.png") no-repeat center center;
+        background-size: contain;
+        > * {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+// 选择器
+.ant-select {
+  width: 100%;
+  &:hover {
+    .ant-select-selector {
+      border-color: #0070e2;
+    }
+  }
+  &.ant-select-focused {
+    .ant-select-selector {
+      box-shadow: none;
+      border-color: #0070e2;
+    }
+  }
+}
+
+// 输入框
+.ant-input-affix-wrapper {
+  &:not(.ant-input-affix-wrapper-disabled):hover {
+    border-color: #0070e2;
+  }
+  &.ant-input-affix-wrapper-focused {
+    box-shadow: none;
+    border-color: #0070e2;
+  }
+}
+
+.ant-input {
+  &:hover {
+    border-color: #0070e2;
+  }
+  &:focus {
+    box-shadow: none;
+    border-color: #0070e2;
+  }
+}
+
+// 下拉菜单
+.ant-select {
+  &.ant-select-single {
+    &.ant-select-focused:not(.ant-select-disabled).ant-select:not(.ant-select-customize-input) {
+      .ant-select-selector {
+        box-shadow: none;
+        border-color: #0070e2;
+      }
+    }
+
+    &:hover {
+      .ant-select-selector {
+        border-color: #0070e2;
+      }
+    }
+  }
+}
+
+// 多选框组
+.ant-checkbox-group {
+  .ant-checkbox.ant-checkbox-checked {
+    .ant-checkbox-inner {
+      background-color: #0070e2;
+      border-color: #0070e2;
+    }
+  }
+}
+
+// 表格内多选按钮
+.ant-checkbox {
+  &.ant-checkbox-checked {
+    .ant-checkbox-inner {
+      background-color: #0070e2;
+      border-color: #0070e2;
+    }
+    &::after{
+      border-color: #0070e2;
+    }
+  }
+}

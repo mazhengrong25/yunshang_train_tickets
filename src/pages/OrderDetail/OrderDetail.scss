@@ -265,6 +265,23 @@
       }
     }
 
+    &.detail_price_info {
+      .price_info_main {
+        .ant-table-thead {
+          th.ant-table-cell {
+            background-color: #f1f3f5;
+            padding: 5px 8px;
+          }
+        }
+        .ant-table-tbody {
+          td.ant-table-cell {
+            padding: 12px 8px;
+            border-bottom-color: #eaeaea;
+          }
+        }
+      }
+    }
+
     &.detail_order_info {
       .order_info_main {
         .main_list {
@@ -276,12 +293,12 @@
           font-weight: 400;
           color: #333333;
 
-          &.remark{
+          &.remark {
             width: 100%;
             display: flex;
             align-items: center;
             margin-top: 24px;
-            p{
+            p {
               flex-shrink: 0;
             }
           }

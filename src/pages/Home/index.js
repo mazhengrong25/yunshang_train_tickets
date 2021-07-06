@@ -2,13 +2,13 @@
  * @Description: 首页 - 火车票查询页
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 11:04:50
- * @LastEditTime: 2021-05-22 20:20:44
+ * @LastEditTime: 2021-07-06 09:43:49
  * @LastEditors: wish.WuJunLong
  */
 
 import React, { Component } from "react";
 
-import { Button, DatePicker, message } from "antd";
+import { Button, DatePicker, message, Checkbox } from "antd";
 
 import TrainIcon from "../../static/train_icon.png"; // 火车票图标
 
@@ -23,6 +23,8 @@ export default class index extends Component {
       start: "",
       end: "",
       time: "",
+
+      onlyType: false, // 只看高铁动车
     };
   }
   componentDidMount() {}
@@ -41,6 +43,14 @@ export default class index extends Component {
       end: end,
     });
   };
+
+  // 只看高铁动车开关
+  changeOnlyType = (e) => {
+    this.setState({
+      onlyType: e.target.checked,
+    });
+  };
+
   // 搜索火车票
   jumpTicketPage() {
     if (!this.state.start || !this.state.end || !this.state.time) {
@@ -54,7 +64,9 @@ export default class index extends Component {
 
     let url = `/ticketInquiry?departure=${this.state.start}&arrive=${
       this.state.end
-    }&departure_date=${this.$moment(this.state.time).format("YYYY-MM-DD")}`;
+    }&departure_date=${this.$moment(this.state.time).format("YYYY-MM-DD")}${
+      this.state.onlyType ? "&only=true" : ""
+    }`;
     this.props.history.push(encodeURI(url));
   }
   render() {
@@ -91,7 +103,11 @@ export default class index extends Component {
               </div>
 
               <div className="submit_box">
-                <div></div>
+                <div className="submit_box_tool">
+                  <Checkbox checked={this.state.onlyType} onChange={this.changeOnlyType}>
+                    只看动车高铁
+                  </Checkbox>
+                </div>
                 <Button
                   type="primary"
                   className="jump_btn"

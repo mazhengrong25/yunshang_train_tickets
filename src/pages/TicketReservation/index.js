@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-01 17:41:45
+ * @LastEditTime: 2021-07-06 10:46:26
  * @LastEditors: wish.WuJunLong
  */
 
@@ -1779,7 +1779,7 @@ export default class index extends Component {
               订单总额 <span>&yen; {this.totalPriceData().total}</span>
             </div>
             <div className="main_list">
-              <div className="list_type">成人票</div>
+              <div className="list_type chd_type">成人票</div>
               <div className="list_price">
                 <div className="price_title">票面价</div>
                 <div className="price_info">

@@ -90,6 +90,23 @@
       }
     }
 
+    &.detail_passenger {
+      .passenger_main {
+        .ant-table-thead {
+          th.ant-table-cell {
+            background-color: #f1f3f5;
+            padding: 5px 8px;
+          }
+        }
+        .ant-table-tbody {
+          td.ant-table-cell {
+            padding: 12px 8px;
+            border-bottom-color: #eaeaea;
+          }
+        }
+      }
+    }
+
     .template_title {
       display: flex;
       align-items: center;

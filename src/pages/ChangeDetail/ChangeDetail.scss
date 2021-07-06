@@ -84,6 +84,23 @@
       }
     }
 
+    &.detail_passenger {
+      .passenger_main {
+        .ant-table-thead {
+          th.ant-table-cell {
+            background-color: #f1f3f5;
+            padding: 5px 8px;
+          }
+        }
+        .ant-table-tbody {
+          td.ant-table-cell {
+            padding: 12px 8px;
+            border-bottom-color: #eaeaea;
+          }
+        }
+      }
+    }
+
     .template_title {
       display: flex;
       align-items: center;
@@ -104,14 +121,14 @@
         font-weight: 400;
         color: #000000;
         padding: 30px 0;
-        &:first-child{
+        &:first-child {
           padding-top: 10px;
         }
-        &:last-child{
+        &:last-child {
           padding-bottom: 10px;
         }
-        &:not(:last-child){
-          border-bottom: 1px solid #EAEAEA;
+        &:not(:last-child) {
+          border-bottom: 1px solid #eaeaea;
         }
         .list_type {
           width: 40px;
@@ -166,7 +183,7 @@
             font-weight: 400;
             color: #000000;
           }
-          .info_icon{
+          .info_icon {
             background: url("../../static/trip_icon.png") no-repeat center center;
             background-size: contain;
             width: 120px;
