@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-06 11:02:31
+ * @LastEditTime: 2021-07-06 14:01:34
  * @LastEditors: wish.WuJunLong
  */
 
@@ -17,7 +17,6 @@ import {
   Table,
   message,
   Pagination,
-  Radio,
   Switch,
   Spin,
   Popover,
@@ -93,6 +92,8 @@ export default class index extends Component {
       checkedPassenger: [newPassenger], // 乘车乘客列表
 
       standing: true, // 是否接受站票
+
+      selectCabinList: [], // 在线选座
 
       contactMessage: {
         // 联系人信息
@@ -603,15 +604,22 @@ export default class index extends Component {
   };
 
   // 修改选座信息
-  editSeatStatus = (index, val) => {
-    let data = JSON.parse(JSON.stringify(this.state.checkedPassenger));
-    console.log(data[index]["choose_seat"], val.target.value);
-    data[index]["choose_seat"] =
-      data[index]["choose_seat"] === val.target.value ? "" : val.target.value;
-    console.log(data[index]["choose_seat"]);
+  editSeatStatus = (val) => {
+    if (val.length > this.state.checkedPassenger.length) {
+      return false;
+    }
+    console.log(val);
     this.setState({
-      checkedPassenger: data,
+      selectCabinList: val,
     });
+    // let data = JSON.parse(JSON.stringify(this.state.checkedPassenger));
+    // console.log(data[index]["choose_seat"], val.target.value);
+    // data[index]["choose_seat"] =
+    //   data[index]["choose_seat"] === val.target.value ? "" : val.target.value;
+    // console.log(data[index]["choose_seat"]);
+    // this.setState({
+    //   checkedPassenger: data,
+    // });
   };
 
   // 修改是否接受站票状态
@@ -623,12 +631,17 @@ export default class index extends Component {
 
   // 已选座位人数
   selectSeatNumber() {
+    // let number = 0;
+    // let data = JSON.parse(JSON.stringify(this.state.checkedPassenger));
+    // data.forEach((item) => {
+    //   if (item.choose_seat) {
+    //     number += 1;
+    //   }
+    // });
     let number = 0;
-    let data = JSON.parse(JSON.stringify(this.state.checkedPassenger));
-    data.forEach((item) => {
-      if (item.choose_seat) {
-        number += 1;
-      }
+    let data = this.state.selectCabinList;
+    data.map(() => {
+      number += 1;
     });
 
     return number;
@@ -658,6 +671,15 @@ export default class index extends Component {
 
     if (!contact.name || !contact.phone) {
       return message.warning("请完善联系人信息后创建订单");
+    }
+
+    if (
+      this.state.reservationMessage.train &&
+      (this.state.reservationMessage.train.type === "G" ||
+        this.state.reservationMessage.train.type === "D") &&
+      this.state.selectCabinList.length < this.state.checkedPassenger.length
+    ) {
+      return message.warning("请为所有乘客选座");
     }
 
     let newData = [];
@@ -895,8 +917,8 @@ export default class index extends Component {
       insurance_id: Number(this.state.selectInsurance), // 保险ID
       order: {
         standing: this.state.standing, //类型：Boolean  必有字段  备注：是否接受站票，默认否
-        is_choose_seat: false, //类型：Boolean  必有字段  备注：是否选座，默认否
-        choose_seat: "", //类型：String  必有字段  备注：选座内容
+        is_choose_seat: this.state.selectCabinList.length > 0 ? true : false, //类型：Boolean  必有字段  备注：是否选座，默认否
+        choose_seat: String(this.state.selectCabinList), //类型：String  必有字段  备注：选座内容
       },
       train: {
         //类型：Object  必有字段  备注：车次信息
@@ -959,12 +981,12 @@ export default class index extends Component {
 
   // 跳转详情
   closeOccupy = () => {
-    this.props.history.push({ pathname: "/orderDetail/" + this.state.isOccupyNo })
-  }
+    this.props.history.push({ pathname: "/orderDetail/" + this.state.isOccupyNo });
+  };
   // 重选车次
   jumpOccupy = () => {
-    this.props.history.goBack()
-  }
+    this.props.history.goBack();
+  };
 
   render() {
     const rowSelection = {
@@ -1620,50 +1642,96 @@ export default class index extends Component {
             <div className="cabin_box">
               <div className="box_title">选择座位</div>
 
-              <div>
-                {this.state.checkedPassenger.map((item, index) =>
-                  item.type === "ADT" ? (
-                    <div className="box_check" key={index}>
-                      <div className="check_title">窗</div>
-                      <Radio.Group
-                        className="check_radio_box"
-                        name={`radioGroup_${index}`}
-                        value={item.choose_seat}
-                        onChange={this.editSeatStatus.bind(this, index)}
-                      >
-                        <Radio.Button value="A">
-                          <span className="cabin_img"></span>
-                          <span className="cabin_text">A</span>
-                        </Radio.Button>
-                        <Radio.Button value="B">
-                          <span className="cabin_img"></span>
-                          <span className="cabin_text">B</span>
-                        </Radio.Button>
-                        <Radio.Button value="C">
-                          <span className="cabin_img"></span>
-                          <span className="cabin_text">C</span>
-                        </Radio.Button>
-                        <label className="ant-radio-button-wrapper not_radio">
-                          <div className="check_title">过道</div>
-                        </label>
+              <Checkbox.Group
+                value={this.state.selectCabinList}
+                className="check_radio_box"
+                onChange={this.editSeatStatus}
+              >
+                <div className="box_check">
+                  <div className="check_title">窗</div>
 
-                        <Radio.Button value="D">
-                          <span className="cabin_img"></span>
-                          <span className="cabin_text">D</span>
-                        </Radio.Button>
-                        <Radio.Button value="F">
-                          <span className="cabin_img"></span>
-                          <span className="cabin_text">F</span>
-                        </Radio.Button>
-                      </Radio.Group>
-
-                      <div className="check_title">窗</div>
+                  <Checkbox value="1A">
+                    <div className="cabin_item">
+                      <span className="cabin_img"></span>
+                      <span className="cabin_text">A</span>
                     </div>
-                  ) : (
-                    ""
-                  )
+                  </Checkbox>
+                  <Checkbox value="1B">
+                    <div className="cabin_item">
+                      <span className="cabin_img"></span>
+                      <span className="cabin_text">B</span>
+                    </div>
+                  </Checkbox>
+                  <Checkbox value="1C">
+                    <div className="cabin_item">
+                      <span className="cabin_img"></span>
+                      <span className="cabin_text">C</span>
+                    </div>
+                  </Checkbox>
+                  <div className="not_radio">
+                    <div className="check_title">过道</div>
+                  </div>
+
+                  <Checkbox value="1D">
+                    <div className="cabin_item">
+                      <span className="cabin_img"></span>
+                      <span className="cabin_text">D</span>
+                    </div>
+                  </Checkbox>
+                  <Checkbox value="1F">
+                    <div className="cabin_item">
+                      <span className="cabin_img"></span>
+                      <span className="cabin_text">F</span>
+                    </div>
+                  </Checkbox>
+
+                  <div className="check_title">窗</div>
+                </div>
+                {this.state.checkedPassenger.length > 1 ? (
+                  <div className="box_check">
+                    <div className="check_title">窗</div>
+
+                    <Checkbox value="2A">
+                      <div className="cabin_item">
+                        <span className="cabin_img"></span>
+                        <span className="cabin_text">A</span>
+                      </div>
+                    </Checkbox>
+                    <Checkbox value="2B">
+                      <div className="cabin_item">
+                        <span className="cabin_img"></span>
+                        <span className="cabin_text">B</span>
+                      </div>
+                    </Checkbox>
+                    <Checkbox value="2C">
+                      <div className="cabin_item">
+                        <span className="cabin_img"></span>
+                        <span className="cabin_text">C</span>
+                      </div>
+                    </Checkbox>
+                    <div className="not_radio">
+                      <div className="check_title">过道</div>
+                    </div>
+
+                    <Checkbox value="2D">
+                      <div className="cabin_item">
+                        <span className="cabin_img"></span>
+                        <span className="cabin_text">D</span>
+                      </div>
+                    </Checkbox>
+                    <Checkbox value="2F">
+                      <div className="cabin_item">
+                        <span className="cabin_img"></span>
+                        <span className="cabin_text">F</span>
+                      </div>
+                    </Checkbox>
+
+                    <div className="check_title">窗</div>
+                  </div>
+                ) : (
+                  ""
                 )}
-              </div>
+              </Checkbox.Group>
 
               <div className="box_title">已选{this.selectSeatNumber()}人</div>
             </div>

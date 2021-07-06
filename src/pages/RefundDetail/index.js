@@ -2,7 +2,7 @@
  * @Description: 退票详情
  * @Author: mzr
  * @Date: 2021-06-21 16:18:48
- * @LastEditTime: 2021-07-06 11:25:08
+ * @LastEditTime: 2021-07-06 13:52:59
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -14,7 +14,7 @@ import TicketIcon from "../../static/trip_icon.png"; // 行程图标
 
 import ViaStopPopover from "../../components/viaStopPopover"; // 经停站组件
 
-import CancelOrderModal from "../../components/cancelOrderModal"; // 取消确认弹窗
+// import CancelOrderModal from "../../components/cancelOrderModal"; // 取消确认弹窗
 
 import "./RefundDetail.scss";
 

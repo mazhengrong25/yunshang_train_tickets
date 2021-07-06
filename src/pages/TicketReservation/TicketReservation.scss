@@ -209,8 +209,8 @@
               }
               .ant-table-tbody {
                 tr {
-                  &.ant-table-row-selected{
-                    td.ant-table-cell{
+                  &.ant-table-row-selected {
+                    td.ant-table-cell {
                       background: #fafafa;
                     }
                   }
@@ -466,21 +466,27 @@
             margin: 0 0 0 24px;
           }
         }
-        .check_radio_box {
-          .ant-radio-button-wrapper {
-            border: none !important;
-            margin-right: 0;
+        .ant-checkbox-wrapper {
+          &.ant-checkbox-wrapper-checked {
+            .cabin_item {
+              .cabin_img {
+                background: url("../../static/cabin_icon_active.png") no-repeat center
+                  center;
+                background-size: contain;
+              }
+            }
+          }
+          .ant-checkbox {
+            display: none;
+          }
+
+          .cabin_item {
             position: relative;
             text-align: center;
-            padding: 0;
             width: 38px;
             height: 40px;
             line-height: 40px;
-            box-shadow: none;
 
-            &::before {
-              display: none;
-            }
             &.not_radio {
               margin: 0 56px !important;
               cursor: auto;
@@ -500,13 +506,6 @@
               height: 100%;
               display: inline-block;
               text-align: center;
-            }
-            &.ant-radio-button-wrapper-checked {
-              .cabin_img {
-                background: url("../../static/cabin_icon_active.png") no-repeat center
-                  center;
-                background-size: contain;
-              }
             }
             .cabin_img {
               background: url("../../static/cabin_icon.png") no-repeat center center;
@@ -653,7 +652,7 @@
           }
         }
         .list_type {
-          &.chd_type{
+          &.chd_type {
             background: rgba(#0070e2, 0.2);
             color: #0070e2;
           }
@@ -847,8 +846,8 @@
       font-weight: 400;
       color: #333333;
       padding: 0 15px;
-     margin-top: 10px;
-     padding-bottom: 10px;
+      margin-top: 10px;
+      padding-bottom: 10px;
     }
     .remark_btn {
       height: 40px;

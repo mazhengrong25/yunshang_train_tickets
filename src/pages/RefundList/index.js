@@ -2,7 +2,7 @@
  * @Description: 退票列表
  * @Author: mzr
  * @Date: 2021-06-21 16:16:31
- * @LastEditTime: 2021-07-06 11:20:56
+ * @LastEditTime: 2021-07-06 13:53:12
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from 'react'
@@ -13,7 +13,7 @@ import { Base64 } from "js-base64";
 
 import { Button, Pagination, Table, message} from "antd";
 
-import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
+// import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
 
 const { Column } = Table;
 
