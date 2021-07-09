@@ -31,6 +31,22 @@ img {
   }
 }
 
+// 表格
+.ant-table-tbody {
+  tr {
+    &.ant-table-row-selected {
+      td.ant-table-cell {
+        background: #fafafa;
+      }
+    }
+    td {
+      font-size: 12px;
+      font-weight: 400;
+      color: #333333;
+    }
+  }
+}
+
 // 日期选择器图标
 .ant-picker {
   &:hover {

@@ -2,7 +2,7 @@
  * @Description: 入口页
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 10:36:06
- * @LastEditTime: 2021-07-01 18:07:27
+ * @LastEditTime: 2021-07-07 17:28:10
  * @LastEditors: wish.WuJunLong
  */
 import React from "react";
@@ -77,10 +77,10 @@ React.$getAge = (identityCard) => {
 };
 
 // 判断url地址是否带有 session 参数
-if (
-  React.$filterUrlParams(window.location.search) &&
-  React.$filterUrlParams(window.location.search).ssotoken === "logout"
-) {
+// if (
+//   React.$filterUrlParams(window.location.search) &&
+//   React.$filterUrlParams(window.location.search).ssotoken === "logout"
+// ) {
   // 如果 session 值为 logout 则遍历所有cookie并删除
   // let cookieData = Cookie.get();
   // console.log(cookieData);
@@ -88,22 +88,22 @@ if (
   //   console.log(i);
   //   Cookie.remove(i);
   // }
-  localStorage.removeItem("ssotoken");
-} else if (
-  React.$filterUrlParams(window.location.search) &&
-  React.$filterUrlParams(window.location.search).ssotoken !== "logout"
-) {
+//   localStorage.removeItem("ssotoken");
+// } else if (
+//   React.$filterUrlParams(window.location.search) &&
+//   React.$filterUrlParams(window.location.search).ssotoken !== "logout"
+// ) {
   // 如果 session 有值 则base64解密 并转义为对象 经行遍历添加cookie
-  let url = React.$filterUrlParams(window.location.search).ssotoken;
-  console.log(url);
-  localStorage.setItem("ssotoken", url);
+  // let url = React.$filterUrlParams(window.location.search).ssotoken;
+  // console.log(url);
+  // localStorage.setItem("ssotoken", url);
   // let urlData = JSON.parse(Base64.decode(url));
   // let urlData = JSON.parse(url);
   // for (let i in urlData) {
   //   console.log(i, urlData[i]);
   //   Cookie.set(i, urlData[i]);
   // }
-}
+// }
 
 if (!React.Component.prototype.$parentUrl) {
   React.Component.prototype.$parentUrl = document.referrer;

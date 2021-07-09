@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-07-06 11:21:56
+ * @LastEditTime: 2021-07-09 15:45:54
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -206,7 +206,7 @@ export default class index extends Component {
     }
   }
 
-    // 订单备注修改
+  // 订单备注修改
   changeRemark = (val) => {
     this.setState({
       orderRemark: val.target.value,
@@ -318,7 +318,13 @@ export default class index extends Component {
                       </Popover>
                     ) : this.state.detailData.status === 7 &&
                       this.state.detailData.refund_order === null ? (
-                      "出票失败"
+                      <Popover
+                        content={this.state.detailData.status_remark}
+                        title={false}
+                        trigger="hover"
+                      >
+                        <span style={{ cursor: "pointer" }}>出票失败</span>
+                      </Popover>
                     ) : this.state.detailData.status === 7 &&
                       this.state.detailData.refund_order !== null ? (
                       "已退票"
@@ -536,7 +542,7 @@ export default class index extends Component {
               </p>
             </div>
             <div className="insurance_main">
-              {String(this.state.detailData.insurance_msg).length > 10 ? (
+              {Number(this.state.detailData.insurance_price) > 0 ? (
                 <>
                   <div className="main_title">已选保险</div>
                   <div className="main_info">
@@ -547,9 +553,7 @@ export default class index extends Component {
                   <div className="main_price">
                     <span>
                       &yen;
-                      {this.state.detailData.insurance_msg
-                        ? this.state.detailData.insurance_msg.default_dis_price
-                        : "-"}
+                      {this.state.detailData.insurance_price || "-"}
                     </span>
                     元/人
                   </div>

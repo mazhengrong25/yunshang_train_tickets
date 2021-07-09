@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-06 15:06:58
+ * @LastEditTime: 2021-07-08 17:38:11
  * @LastEditors: wish.WuJunLong
  */
 
@@ -20,6 +20,8 @@ import {
   Switch,
   Spin,
   Popover,
+  Menu,
+  Dropdown,
 } from "antd";
 
 import ViaStopPopover from "../../components/viaStopPopover"; // 经停站组件
@@ -119,6 +121,8 @@ export default class index extends Component {
       isOccupyNo: "",
       isOccupyModal: false,
       isOccupyStatus: 0,
+
+      passengerSelectStatus: null, // 乘客名称弹窗
     };
   }
 
@@ -210,9 +214,15 @@ export default class index extends Component {
 
   // 打开常用乘客弹窗
   async openPassengerModal() {
+    let data = this.state.passengerSearch;
+    data["passenger_type"] = "ADT";
+    await this.setState({
+      passengerSearch: data,
+    });
     await this.getGroupList();
     await this.getPassengerList();
     // sessionStorage.setItem("passenger", JSON.stringify(this.state.checkedPassenger));
+
     await this.setState({
       passengerModal: true,
       selectedRowKeys: this.state.checkedPassenger,
@@ -222,7 +232,6 @@ export default class index extends Component {
   // 获取常用乘客列表
   getPassengerList() {
     let data = this.state.passengerSearch;
-    data["passenger_type"] = "ADT";
     this.$axios.post("/train/passenger/list", data).then((res) => {
       if (res.errorcode === 10000) {
         this.setState({
@@ -599,10 +608,116 @@ export default class index extends Component {
   editPassenger = (index, type, val) => {
     let data = JSON.parse(JSON.stringify(this.state.checkedPassenger));
     data[index][type] = val.target.value;
+    if (
+      type === "name" &&
+      val.target.value &&
+      this.delayedChange(val.target.value).length > 0
+    ) {
+      console.log(this.delayedChange(val.target.value));
+      let passengerName = this.state.passengerSearch;
+      passengerName.passenger_type = "";
+      passengerName.page = 1;
+      passengerName.name = val.target.value;
+      this.setState({
+        passengerSelectStatus: index,
+        passengerSearch: passengerName,
+      });
+      this.getPassengerList();
+    } else {
+      let passengerName = this.state.passengerSearch;
+      passengerName.passenger_type = "";
+      passengerName.name = "";
+      passengerName.page = 1;
+      this.setState({
+        passengerSelectStatus: null,
+        passengerList: [],
+        passengerSearch: passengerName,
+      });
+    }
     this.setState({
       checkedPassenger: data,
     });
   };
+
+  // 防抖
+  delayedChange(val) {
+    if (/.*[\u4e00-\u9fa5]+.*/.test(val)) {
+      return val;
+    } else {
+      return "";
+    }
+  }
+
+  // 重新获取焦点
+  focusPassengerName(index) {
+    let passengerName = this.state.passengerSearch;
+    passengerName.name = "";
+    passengerName.page = 1;
+    this.setState({
+      passengerSelectStatus: null,
+      passengerList: [],
+      passengerSearch: passengerName,
+    });
+    setTimeout(() => {
+      if (
+        this.state.checkedPassenger[index].name &&
+        this.state.checkedPassenger[index].name.length > 0
+      ) {
+        let passengerName = this.state.passengerSearch;
+        passengerName.name = this.state.checkedPassenger[index].name;
+        passengerName.passenger_type = "";
+        passengerName.page = 1;
+        this.setState({
+          passengerSelectStatus: index,
+          passengerSearch: passengerName,
+        });
+        this.getPassengerList();
+      }
+    }, 300);
+  }
+
+  // 失去焦点
+  blurPassengerName() {
+    setTimeout(() => {
+      let passengerName = this.state.passengerSearch;
+      passengerName.name = "";
+      passengerName.page = 1;
+      this.setState({
+        passengerSelectStatus: null,
+        passengerList: [],
+        passengerSearch: passengerName,
+      });
+    }, 100);
+  }
+
+  passengerListSelect(val, index) {
+    let data = this.state.checkedPassenger;
+
+    if (React.$getAge(val.cert_no).age >= 14) {
+      data[index]["type"] = "ADT";
+      data[index]["name"] = val.name;
+      data[index]["cert_no"] = val.cert_no;
+      data[index]["cert_type"] = val.cert_type;
+      data[index]["id"] = val.id;
+      data[index]["phone"] = val.phone;
+      data[index]["verify_status"] = val.verify_status;
+    } else {
+      data[index].type = "CHD";
+      data[index].year = this.$moment(React.$getAge(val.cert_no).strBirthday).format(
+        "YYYY"
+      );
+      data[index].month = this.$moment(React.$getAge(val.cert_no).strBirthday).format(
+        "MM"
+      );
+      data[index].day = this.$moment(React.$getAge(val.cert_no).strBirthday).format("DD");
+    }
+
+    this.setState({
+      checkedPassenger: data,
+    });
+
+    console.log(val, index);
+  }
 
   // 修改选座信息
   editSeatStatus = (val) => {
@@ -641,9 +756,10 @@ export default class index extends Component {
     // });
     let number = 0;
     let data = this.state.selectCabinList;
-    data.map(() => {
+
+    for (let i = 0; i < data.length; i++) {
       number += 1;
-    });
+    }
 
     return number;
   }
@@ -1413,12 +1529,40 @@ export default class index extends Component {
                       <div className="list_item adt_name">
                         <div className="item_title">姓名</div>
                         <div className="item_input">
-                          <Input
-                            value={item.name}
-                            placeholder="与证件一致"
-                            allowClear
-                            onChange={this.editPassenger.bind(this, index, "name")}
-                          ></Input>
+                          <Dropdown
+                            visible={this.state.passengerSelectStatus === index}
+                            overlay={() => (
+                              <Menu>
+                                {this.state.passengerList.data &&
+                                  this.state.passengerList.data.map((pitem, pindex) => (
+                                    <Menu.Item
+                                      style={{
+                                        display:
+                                          this.state.passengerList.data.length > 0
+                                            ? "block"
+                                            : "none",
+                                      }}
+                                      key={pindex}
+                                      onClick={() =>
+                                        this.passengerListSelect(pitem, index)
+                                      }
+                                    >
+                                      姓名:{pitem.name}, 身份证号:{pitem.cert_no}
+                                    </Menu.Item>
+                                  ))}
+                              </Menu>
+                            )}
+                          >
+                            <Input
+                              value={item.name}
+                              placeholder="与证件一致"
+                              allowClear
+                              onChange={this.editPassenger.bind(this, index, "name")}
+                              onFocus={() => this.focusPassengerName(index)}
+                              onBlur={() => this.blurPassengerName()}
+                            ></Input>
+                          </Dropdown>
+
                           {item.remark ? (
                             <Popover
                               overlayClassName="passenger_remark_popover"
@@ -1509,12 +1653,33 @@ export default class index extends Component {
                       <div className="list_item adt_name chd_name">
                         <div className="item_title">姓名</div>
                         <div className="item_input">
-                          <Input
-                            value={item.name}
-                            placeholder="与证件一致"
-                            allowClear
-                            onChange={this.editPassenger.bind(this, index, "name")}
-                          ></Input>
+                          <Dropdown
+                            visible={this.state.passengerSelectStatus === index}
+                            overlay={() => (
+                              <Menu>
+                                {this.state.passengerList.data &&
+                                  this.state.passengerList.data.map((pitem, pindex) => (
+                                    <Menu.Item
+                                      key={pindex}
+                                      onClick={() =>
+                                        this.passengerListSelect(pitem, index)
+                                      }
+                                    >
+                                      姓名:{pitem.name}, 身份证号:{pitem.cert_no}
+                                    </Menu.Item>
+                                  ))}
+                              </Menu>
+                            )}
+                          >
+                            <Input
+                              value={item.name}
+                              placeholder="与证件一致"
+                              allowClear
+                              onChange={this.editPassenger.bind(this, index, "name")}
+                              onFocus={() => this.focusPassengerName(index)}
+                              onBlur={() => this.blurPassengerName()}
+                            ></Input>
+                          </Dropdown>
                         </div>
                       </div>
 

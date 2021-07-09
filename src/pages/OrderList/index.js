@@ -2,13 +2,22 @@
  * @Description: 订单列表
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-07-01 12:04:40
+ * @LastEditTime: 2021-07-09 14:02:39
  * @LastEditors: wish.WuJunLong
  */
 
 import React, { Component } from "react";
 
-import { Button, Pagination, Table, Popover, message } from "antd";
+import {
+  Button,
+  Pagination,
+  Table,
+  Popover,
+  message,
+  Input,
+  Select,
+  DatePicker,
+} from "antd";
 
 import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
 
@@ -17,6 +26,8 @@ import "./OrderList.scss";
 import { Base64 } from "js-base64";
 
 const { Column } = Table;
+const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 export default class index extends Component {
   constructor(props) {
@@ -28,22 +39,9 @@ export default class index extends Component {
       orderList: [], // 订单列表
       tableLoading: false, // 订单表格加载
       orderSearch: {
-        channel: "1", //类型：String  必有字段  备注：渠道1 web 2 miniapp 3 wechat
-        order_no: "", //类型：String  必有字段  备注：订单号
-        out_trade_no: "", //类型：String  必有字段  备注：外部订单号
-        ticket_number: "", //类型：String  必有字段  备注：取票号（电子单号）
-        from_station: "", //类型：String  必有字段  备注：出发
-        to_station: "", //类型：String  必有字段  备注：到达
-        pay_status: "", //类型：String  必有字段  备注：支付状态：1:未支付 2:已支付 3:已退款 4:已取消
-        pay_type: "", //类型：String  必有字段  备注：支付方式：1:预存款 2：授信支付 3：易宝 4支付宝
-        status: "", //类型：String  必有字段  备注：状态 1 占座中 2占座成功待支付 3已支付 4已出票 4已取消 5占座失败 6出票失败
-        pro_center_id: "", //类型：String  必有字段  备注：利润中心ID
-        is_admin_book: "", //类型：String  必有字段  备注：管理员代订 0否 1是
-        is_settle: "", //类型：String  必有字段  备注：是否结算 1 是 0 否
-        train_date_start: "", //类型：String  必有字段  备注：起飞开始
-        train_date_end: "", //类型：String  必有字段  备注：起飞结束
-        pay_time_start: "", //类型：String  必有字段  备注：支付开始
-        pay_time_end: "", //类型：String  必有字段  备注：支付结束
+        orderType: "订单号",
+        timeType: "出行时间",
+
         page: 1,
         limit: 20,
       },
@@ -52,6 +50,8 @@ export default class index extends Component {
       isSegmentsModalData: {}, // 弹窗数据
       isSegmentsModalType: "", // 弹窗状态
       isSegmentsModalBtnStatus: false, // 弹窗按钮状态
+
+      isAdmin: false,
     };
   }
 
@@ -60,16 +60,106 @@ export default class index extends Component {
     this.getOrderNumber();
   }
 
+  // 组装筛选数据
+  async searchSubmit() {
+    console.log(this.state.orderSearch);
+    let data = this.state.orderSearch;
+
+    if (data.timeType === "出行时间" && data.timeData) {
+      data.train_date_start = this.$moment(data.timeData[0]).format("YYYY-MM-DD");
+      data.train_date_end = this.$moment(data.timeData[1]).format("YYYY-MM-DD");
+      data.pay_time_start = "";
+      data.pay_time_end = "";
+    } else if (data.timeType === "预定时间" && data.timeData) {
+      data.pay_time_start = this.$moment(data.timeData[0]).format("YYYY-MM-DD");
+      data.pay_time_end = this.$moment(data.timeData[1]).format("YYYY-MM-DD");
+      data.train_date_start = "";
+      data.train_date_end = "";
+    } else if (!data.timeData) {
+      data.pay_time_start = "";
+      data.pay_time_end = "";
+      data.train_date_start = "";
+      data.train_date_end = "";
+    }
+
+    if (data.orderType === "订单号" && data.orderNo) {
+      data.order_no = data.orderNo;
+      data.ticket_number = "";
+    } else if (data.orderType === "票号" && data.orderNo) {
+      data.ticket_number = data.orderNo;
+      data.order_no = "";
+    } else if (!data.orderNo) {
+      data.ticket_number = "";
+      data.order_no = "";
+    }
+
+    data.page = 1;
+
+    await this.setState({
+      orderSearch: data,
+    });
+
+    await this.getOrderListData();
+  }
+
+  // 筛选数据输入框
+  searchInput = (label, val) => {
+    let data = this.state.orderSearch;
+    data[label] = val.target.value;
+
+    this.setState({
+      orderSearch: data,
+    });
+  };
+
+  // 筛选数据选择器
+  searchSelect = (label, val) => {
+    console.log(val);
+    let data = this.state.orderSearch;
+    data[label] = val;
+
+    this.setState({
+      orderSearch: data,
+    });
+  };
+
   // 获取订单列表
   getOrderListData() {
     this.setState({
       orderList: [],
       tableLoading: true,
     });
-    this.$axios.post("/train/order/list", this.state.orderSearch).then((res) => {
+
+    let data = {
+      channel: this.state.orderSearch.channel || "", //类型：String  必有字段  备注：渠道1 web 2 miniapp 3 wechat
+      order_no: this.state.orderSearch.order_no || "", //类型：String  必有字段  备注：订单号
+      out_trade_no: this.state.orderSearch.out_trade_no || "", //类型：String  必有字段  备注：外部订单号
+      ticket_number: this.state.orderSearch.ticket_number || "", //类型：String  必有字段  备注：取票号（电子单号）
+      from_station: this.state.orderSearch.from_station || "", //类型：String  必有字段  备注：出发
+      to_station: this.state.orderSearch.to_station || "", //类型：String  必有字段  备注：到达
+      pay_status: this.state.orderSearch.pay_status || "", //类型：String  必有字段  备注：支付状态：1:未支付 2:已支付 3:已退款 4:已取消
+      pay_type: this.state.orderSearch.pay_type || "", //类型：String  必有字段  备注：支付方式：1:预存款 2：授信支付 3：易宝 4支付宝
+      status: this.state.orderSearch.status || "", //类型：String  必有字段  备注：状态 1 占座中 2占座成功待支付 3已支付 4已出票 4已取消 5占座失败 6出票失败
+      pro_center_id: this.state.orderSearch.pro_center_id || "", //类型：String  必有字段  备注：利润中心ID
+      is_admin_book: this.state.orderSearch.is_admin_book || "", //类型：String  必有字段  备注：管理员代订 0否 1是
+      is_settle: this.state.orderSearch.is_settle || "", //类型：String  必有字段  备注：是否结算 1 是 0 否
+      train_date_start: this.state.orderSearch.train_date_start || "", //类型：String  必有字段  备注：起飞开始
+      train_date_end: this.state.orderSearch.train_date_end || "", //类型：String  必有字段  备注：起飞结束
+      pay_time_start: this.state.orderSearch.pay_time_start || "", //类型：String  必有字段  备注：支付开始
+      pay_time_end: this.state.orderSearch.pay_time_end || "", //类型：String  必有字段  备注：支付结束
+      train_number: this.state.orderSearch.train_number || "", //类型：String  必有字段  车次
+      book_user: this.state.orderSearch.book_user || "", //类型：String  必有字段  订票员
+      passenger: this.state.orderSearch.passenger || "", //类型：String  必有字段  乘客
+
+      page: this.state.orderSearch.page,
+      limit: this.state.orderSearch.limit,
+    };
+
+    this.$axios.post("/train/order/list", data).then((res) => {
       if (res.code === 0) {
         this.setState({
           orderList: res.data,
+          isAdmin: res.is_admin,
         });
       }
       this.setState({
@@ -100,7 +190,31 @@ export default class index extends Component {
 
   // 获取订单状态数量
   getOrderNumber() {
-    this.$axios.post("/train/order/count", this.state.orderSearch).then((res) => {
+    let data = {
+      channel: this.state.orderSearch.channel || "", //类型：String  必有字段  备注：渠道1 web 2 miniapp 3 wechat
+      order_no: this.state.orderSearch.order_no || "", //类型：String  必有字段  备注：订单号
+      out_trade_no: this.state.orderSearch.out_trade_no || "", //类型：String  必有字段  备注：外部订单号
+      ticket_number: this.state.orderSearch.ticket_number || "", //类型：String  必有字段  备注：取票号（电子单号）
+      from_station: this.state.orderSearch.from_station || "", //类型：String  必有字段  备注：出发
+      to_station: this.state.orderSearch.to_station || "", //类型：String  必有字段  备注：到达
+      pay_status: this.state.orderSearch.pay_status || "", //类型：String  必有字段  备注：支付状态：1:未支付 2:已支付 3:已退款 4:已取消
+      pay_type: this.state.orderSearch.pay_type || "", //类型：String  必有字段  备注：支付方式：1:预存款 2：授信支付 3：易宝 4支付宝
+      status: this.state.orderSearch.status || "", //类型：String  必有字段  备注：状态 1 占座中 2占座成功待支付 3已支付 4已出票 4已取消 5占座失败 6出票失败
+      pro_center_id: this.state.orderSearch.pro_center_id || "", //类型：String  必有字段  备注：利润中心ID
+      is_admin_book: this.state.orderSearch.is_admin_book || "", //类型：String  必有字段  备注：管理员代订 0否 1是
+      is_settle: this.state.orderSearch.is_settle || "", //类型：String  必有字段  备注：是否结算 1 是 0 否
+      train_date_start: this.state.orderSearch.train_date_start || "", //类型：String  必有字段  备注：起飞开始
+      train_date_end: this.state.orderSearch.train_date_end || "", //类型：String  必有字段  备注：起飞结束
+      pay_time_start: this.state.orderSearch.pay_time_start || "", //类型：String  必有字段  备注：支付开始
+      pay_time_end: this.state.orderSearch.pay_time_end || "", //类型：String  必有字段  备注：支付结束
+      train_number: this.state.orderSearch.train_number || "", //类型：String  必有字段  车次
+      book_user: this.state.orderSearch.book_user || "", //类型：String  必有字段  订票员
+      passenger: this.state.orderSearch.passenger || "", //类型：String  必有字段  乘客
+
+      page: this.state.orderSearch.page,
+      limit: this.state.orderSearch.limit,
+    };
+    this.$axios.post("/train/order/count", data).then((res) => {
       if (res.code === 0) {
         this.setState({
           orderNumberData: res.data,
@@ -224,7 +338,142 @@ export default class index extends Component {
         </div>
 
         <div className="order_main">
-          <div className="main_search"></div>
+          <div className="main_search">
+            <div className="search_list">
+              <div className="list_title" style={{ width: 74 }}>
+                乘车人
+              </div>
+              <div className="list_item">
+                <Input
+                  onChange={this.searchInput.bind(this, "passenger")}
+                  allowClear
+                  placeholder="请输入"
+                  value={this.state.orderSearch.passenger}
+                ></Input>
+              </div>
+            </div>
+
+            <div className="search_list">
+              <div className="list_title">出发地</div>
+              <div className="list_item">
+                <Input
+                  allowClear
+                  onChange={this.searchInput.bind(this, "from_station")}
+                  placeholder="请输入"
+                  value={this.state.orderSearch.from_station}
+                ></Input>
+              </div>
+            </div>
+
+            <div className="search_list">
+              <div className="list_title">到达地</div>
+              <div className="list_item">
+                <Input
+                  allowClear
+                  onChange={this.searchInput.bind(this, "to_station")}
+                  placeholder="请输入"
+                  value={this.state.orderSearch.to_station}
+                ></Input>
+              </div>
+            </div>
+
+            <div className="search_list" style={{ marginRight: 0 }}>
+              <div className="list_title" style={{ width: 88 }}>
+                <Select
+                  onChange={this.searchSelect.bind(this, "timeType")}
+                  value={this.state.orderSearch.timeType}
+                >
+                  <Option value="出行时间">出行时间</Option>
+                  <Option value="预定时间">预定时间</Option>
+                </Select>
+              </div>
+              <div className="list_item" style={{ width: 280 }}>
+                <RangePicker
+                  onChange={this.searchSelect.bind(this, "timeData")}
+                  placeholder={["请选择", "请选择"]}
+                  value={this.state.orderSearch.timeData}
+                />
+              </div>
+            </div>
+
+            <div className="search_list">
+              <div className="list_title" style={{ width: 74 }}>
+                <Select
+                  onChange={this.searchSelect.bind(this, "orderType")}
+                  value={this.state.orderSearch.orderType}
+                >
+                  <Option value="订单号">订单号</Option>
+                  <Option value="票号">票号</Option>
+                </Select>
+              </div>
+              <div className="list_item">
+                <Input
+                  onChange={this.searchInput.bind(this, "orderNo")}
+                  allowClear
+                  placeholder="订单号/票号"
+                  value={this.state.orderSearch.orderNo}
+                ></Input>
+              </div>
+            </div>
+
+            <div className="search_list">
+              <div className="list_title">车次</div>
+              <div className="list_item">
+                <Input
+                  placeholder="请输入"
+                  onChange={this.searchInput.bind(this, "train_number")}
+                  allowClear
+                  value={this.state.orderSearch.train_number}
+                ></Input>
+              </div>
+            </div>
+
+            {this.state.isAdmin ? (
+              <div className="search_list">
+                <div className="list_title">订票员</div>
+                <div className="list_item">
+                  <Input
+                    placeholder="请输入"
+                    onChange={this.searchInput.bind(this, "book_user")}
+                    allowClear
+                    value={this.state.orderSearch.book_user}
+                  ></Input>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+
+            <div className="search_list" style={{ marginRight: 16 }}>
+              <div className="list_title" style={{ width: 88 }}>
+                订单状态
+              </div>
+              <div className="list_item">
+                <Select
+                  allowClear
+                  onChange={this.searchSelect.bind(this, "status")}
+                  placeholder="请选择"
+                  value={this.state.orderSearch.status}
+                >
+                  <Option value={1}>占座中</Option>
+                  <Option value={2}>待支付</Option>
+                  <Option value={3}>待出票</Option>
+                  <Option value={4}>已出票</Option>
+                  <Option value={5}>已取消</Option>
+                  <Option value={6}>占座失败</Option>
+                  <Option value={7}>出票失败</Option>
+                </Select>
+              </div>
+            </div>
+
+            <Button
+              className="search_submit"
+              type="primary"
+              onClick={() => this.searchSubmit()}
+            >
+              搜索
+            </Button>
+          </div>
 
           <div className="main_table">
             <Table
@@ -262,9 +511,7 @@ export default class index extends Component {
                         size="small"
                         className="option_pay"
                         type="link"
-                        href={`${this.$parentUrl}pay/${Base64.encode(
-                          render.order_no
-                        )}`}
+                        href={`${this.$parentUrl}pay/${Base64.encode(render.order_no)}`}
                       >
                         付
                       </Button>

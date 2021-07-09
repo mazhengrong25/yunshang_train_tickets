@@ -2,14 +2,14 @@
  * @Description: 退票列表
  * @Author: mzr
  * @Date: 2021-06-21 16:16:31
- * @LastEditTime: 2021-07-06 13:53:12
+ * @LastEditTime: 2021-07-09 09:55:22
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from 'react'
 
 import './RefundList.scss'
 
-import { Base64 } from "js-base64";
+// import { Base64 } from "js-base64";
 
 import { Button, Pagination, Table, message} from "antd";
 
@@ -220,20 +220,6 @@ export default class index extends Component {
                     ) : (
                       ""
                     )} */}
-                    {render.status === 2 ? (
-                      <Button
-                        size="small"
-                        className="option_pay"
-                        type="link"
-                        href={`${this.$parentUrl}pay/${Base64.encode(
-                          render.order_no
-                        )}`}
-                      >
-                        付
-                      </Button>
-                    ) : (
-                      ""
-                    )}
                   </div>
                 )}
               />
