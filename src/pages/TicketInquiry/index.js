@@ -2,7 +2,7 @@
  * @Description: 车票查询
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 11:06:03
- * @LastEditTime: 2021-07-06 10:00:33
+ * @LastEditTime: 2021-07-09 17:14:33
  * @LastEditors: wish.WuJunLong
  */
 
@@ -202,6 +202,10 @@ export default class index extends Component {
       arrive: this.state.end,
       departure_date: this.$moment(this.state.time).format("YYYY-MM-DD"),
     };
+
+    if (this.props.type && this.props.type.is_change) {
+      data["is_change"] = this.props.type.is_change;
+    }
 
     await this.setState({
       ticketMessage: data,

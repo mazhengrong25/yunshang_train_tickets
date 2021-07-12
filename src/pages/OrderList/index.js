@@ -2,7 +2,7 @@
  * @Description: 订单列表
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-07-09 14:02:39
+ * @LastEditTime: 2021-07-09 15:59:41
  * @LastEditors: wish.WuJunLong
  */
 
@@ -39,6 +39,7 @@ export default class index extends Component {
       orderList: [], // 订单列表
       tableLoading: false, // 订单表格加载
       orderSearch: {
+        status: "",
         orderType: "订单号",
         timeType: "出行时间",
 
@@ -95,7 +96,19 @@ export default class index extends Component {
 
     data.page = 1;
 
+    let status =
+      this.state.orderSearch.status === 1
+        ? "占座中"
+        : this.state.orderSearch.status === 2
+        ? "待支付"
+        : this.state.orderSearch.status === 3
+        ? "待出票"
+        : this.state.orderSearch.status === 5
+        ? "已取消"
+        : "全部";
+
     await this.setState({
+      orderStatusActive: status,
       orderSearch: data,
     });
 
@@ -173,13 +186,13 @@ export default class index extends Component {
     let data = this.state.orderSearch;
     data.status =
       val === "占座中"
-        ? "1"
+        ? 1
         : val === "待支付"
-        ? "2"
+        ? 2
         : val === "待出票"
-        ? "3"
+        ? 3
         : val === "已取消"
-        ? "5"
+        ? 5
         : "";
     await this.setState({
       orderSearch: data,
@@ -450,11 +463,11 @@ export default class index extends Component {
               </div>
               <div className="list_item">
                 <Select
-                  allowClear
                   onChange={this.searchSelect.bind(this, "status")}
                   placeholder="请选择"
                   value={this.state.orderSearch.status}
                 >
+                  <Option value={""}>全部</Option>
                   <Option value={1}>占座中</Option>
                   <Option value={2}>待支付</Option>
                   <Option value={3}>待出票</Option>

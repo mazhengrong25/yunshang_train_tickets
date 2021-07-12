@@ -2,7 +2,7 @@
  * @Description: 改签列表
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 09:26:48
- * @LastEditTime: 2021-07-06 11:12:27
+ * @LastEditTime: 2021-07-12 13:40:34
  * @LastEditors: wish.WuJunLong
  */
 
@@ -93,7 +93,7 @@ export default class index extends Component {
   // 获取改签列表数量
   getChangeDataCount() {
     let data = this.state.orderSearch;
-    this.$axios.post("train/order/change/count", data).then((res) => {
+    this.$axios.post("/train/order/change/count", data).then((res) => {
       if (res.code === 0) {
         this.setState({
           orderNumberData: res.data,

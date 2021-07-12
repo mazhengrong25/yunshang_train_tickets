@@ -2,8 +2,8 @@
  * @Description: 配置页
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 10:36:06
- * @LastEditTime: 2021-06-21 17:40:26
- * @LastEditors: mzr
+ * @LastEditTime: 2021-07-12 11:16:58
+ * @LastEditors: wish.WuJunLong
  */
 import React, { Fragment } from "react";
 
@@ -28,7 +28,7 @@ import OrderRefund from "./pages/OrderRefund"; // 退票页
 function App() {
   return (
     <ConfigProvider locale={locale}>
-      <BrowserRouter>
+      <BrowserRouter basename="/web/train">
         <Fragment>
           <Switch>
             <Route exact path="/orderRefund/:id" component={OrderRefund}></Route>

@@ -3,7 +3,7 @@
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
  * @LastEditors: wish.WuJunLong
- * @LastEditTime: 2021-07-01 15:14:58
+ * @LastEditTime: 2021-07-09 17:15:24
  */
 
 import React, { Component } from "react";
@@ -76,6 +76,8 @@ export default class index extends Component {
       departure: this.state.detailData.from_station,
       arrive: this.state.detailData.to_station,
       departure_date: this.$moment(this.state.newTicketTime).format("YYYY-MM-DD"),
+      is_change: true,
+      change_time: this.state.detailData.train_date
     };
 
     this.setState({
@@ -438,10 +440,6 @@ export default class index extends Component {
                       return (
                         (current &&
                           current < this.$moment().subtract(1, "days").endOf("day")) ||
-                        current <
-                          this.$moment(this.state.detailData.segments[0].departure_time)
-                            .subtract(1, "days")
-                            .endOf("day") ||
                         (current && current > this.$moment().add(15, "days").endOf("day"))
                       );
                     }}

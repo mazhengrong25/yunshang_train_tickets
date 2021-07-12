@@ -2,7 +2,7 @@
  * @Description: 首页 - 火车票查询页
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 11:04:50
- * @LastEditTime: 2021-07-06 09:43:49
+ * @LastEditTime: 2021-07-12 11:11:34
  * @LastEditors: wish.WuJunLong
  */
 
@@ -27,7 +27,13 @@ export default class index extends Component {
       onlyType: false, // 只看高铁动车
     };
   }
-  componentDidMount() {}
+  componentDidMount() {
+    let url = React.$filterUrlParams(decodeURI(this.props.location.search));
+    console.log(url)
+    if (url && url.url) {
+      this.props.history.push(url.url);
+    }
+  }
 
   // 出发时间
   changeTime = (val) => {

@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-08 17:38:11
+ * @LastEditTime: 2021-07-12 13:42:24
  * @LastEditors: wish.WuJunLong
  */
 
@@ -114,6 +114,8 @@ export default class index extends Component {
       insuranceList: [], // 保险列表
       selectInsurance: "", // 已选择保险ID
       insuranceMessage: {}, // 保险信息
+
+      insuranceSwitchStatus: false,
 
       submitStatus: false, // 订单信息提交
 
@@ -893,7 +895,7 @@ export default class index extends Component {
       passenger: checkList,
     };
 
-    return this.$axios.post("train/passenger/check", checkData).then((res) => {
+    return this.$axios.post("/train/passenger/check", checkData).then((res) => {
       return res;
     });
   }
@@ -912,7 +914,19 @@ export default class index extends Component {
           });
           thisId = res.data[0].id;
         }
+
+        if(res.data.length < 1){
+          let checkPassengerList= this.state.checkedPassenger
+          checkPassengerList.forEach(item => {
+            item.insurance = false
+          })
+          this.setState({
+            checkedPassenger: checkPassengerList
+          })
+        }
+
         this.setState({
+          insuranceSwitchStatus: res.data.length < 1,
           insuranceList: res.data,
           selectInsurance: thisId,
         });
@@ -1316,6 +1330,7 @@ export default class index extends Component {
                         <div className="item_title">保险</div>
                         <div className="item_input">
                           <Switch
+                            disabled={this.state.insuranceSwitchStatus}
                             checkedChildren="是"
                             unCheckedChildren="否"
                             onChange={this.switchInsurance.bind(this, index)}
