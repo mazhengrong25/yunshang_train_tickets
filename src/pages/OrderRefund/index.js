@@ -2,15 +2,15 @@
  * @Description: 退票详情
  * @Author: mzr
  * @Date: 2021-06-21 10:38:35
- * @LastEditTime: 2021-06-24 09:01:50
- * @LastEditors: mzr
+ * @LastEditTime: 2021-07-13 15:07:05
+ * @LastEditors: wish.WuJunLong
  */
 
-import React, { Component } from 'react'
+import React, { Component } from "react";
 
 import "./OrderRefund.scss";
 
-import { message , Button, Table , Popover} from "antd";
+import { message, Button, Table, Popover } from "antd";
 
 import InsuranceIcon from "../../static/insurance_icon.png"; // 保险图标
 import TicketIcon from "../../static/trip_icon.png"; // 行程图标
@@ -25,8 +25,8 @@ export default class index extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      orderNo:"", // 订单号
-      detailData:{}, // 详情数据
+      orderNo: "", // 订单号
+      detailData: {}, // 详情数据
 
       selectPassengerList: [], // 选中乘客
 
@@ -38,7 +38,7 @@ export default class index extends Component {
       isSegmentsModalData: {}, // 弹窗数据
       isSegmentsModalType: "", // 弹窗状态
       isSegmentsModalBtnStatus: false, // 弹窗按钮状态
-    }
+    };
   }
 
   async componentDidMount() {
@@ -58,7 +58,7 @@ export default class index extends Component {
         this.setState({
           detailData: res.data,
         });
-        console.log('detailData',this.state.detailData)
+        console.log("detailData", this.state.detailData);
       }
     });
   }
@@ -134,7 +134,6 @@ export default class index extends Component {
       passengers: this.state.selectPassengerList,
     };
 
-  
     this.setState({
       isSegmentsModal: true,
       isSegmentsModalType: "退票",
@@ -155,13 +154,18 @@ export default class index extends Component {
     this.setState({
       isSegmentsModalBtnStatus: true,
     });
+    let passenger = [];
+    this.state.selectPassengerList.forEach((item) => {
+      passenger.push(item.id);
+    });
     let data = {
-      order_no: this.state.orderNo,                //类型：String  必有字段  备注：订单号
-      is_change:false,                //类型：Boolean  必有字段  备注：是否是改签订单退票 1：是 0：否
-      is_voluntary:1,                //类型：Number  必有字段  备注：时候自愿 1是 2 否
-      reason:"mock"                //类型：String  可有字段  备注：不自愿理由
-    }
-    this.$axios.post("/train/order/refund",data).then((res) => {
+      order_no: this.state.orderNo, //类型：String  必有字段  备注：订单号
+      is_change: false, //类型：Boolean  必有字段  备注：是否是改签订单退票 1：是 0：否
+      passenger_ids: passenger,
+      is_voluntary: 1, //类型：Number  必有字段  备注：时候自愿 1是 2 否
+      reason: "", //类型：String  可有字段  备注：不自愿理由
+    };
+    this.$axios.post("/train/order/refund", data).then((res) => {
       if (res.code === 0) {
         this.setState({
           isSegmentsModalBtnStatus: false,
@@ -178,7 +182,7 @@ export default class index extends Component {
           isSegmentsModalBtnStatus: false,
         });
       }
-    })
+    });
   }
 
   render() {
@@ -191,9 +195,7 @@ export default class index extends Component {
     };
     return (
       <div className="order_refund">
-
         <div className="detail_template detail_header">
-
           <div className="header_left">
             <div className="left_no">
               <div className="header_title">订单编号</div>
@@ -267,7 +269,7 @@ export default class index extends Component {
                   <Button
                     className="jump_order_pay"
                     type="link"
-                    href={`${this.$parentUrl}pay/${this.imageBase(
+                    href={`/pay/${this.imageBase(
                       this.state.detailData.order_no
                     )}`}
                   >
@@ -293,9 +295,8 @@ export default class index extends Component {
               ""
             )}
           </div>
-        
         </div>
-        
+
         <div className="detail_template detail_ticket_info">
           <div className="template_title">
             <p>车次信息</p>
@@ -460,7 +461,7 @@ export default class index extends Component {
             </div>
           </div>
         </div>
-        
+
         <div className="button_box">
           <Button className="back_btn" onClick={() => this.jumpBack()}>
             返回
@@ -473,7 +474,7 @@ export default class index extends Component {
             提交退票
           </Button>
         </div>
-        
+
         <RefundOrderModal
           isSegmentsModalType="退票"
           isSegmentsModal={this.state.isSegmentsModal}
@@ -483,6 +484,6 @@ export default class index extends Component {
           closeModalBtn={() => this.closeModalBtn()}
         ></RefundOrderModal>
       </div>
-    )
+    );
   }
 }

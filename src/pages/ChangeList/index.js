@@ -2,7 +2,7 @@
  * @Description: 改签列表
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 09:26:48
- * @LastEditTime: 2021-07-12 13:40:34
+ * @LastEditTime: 2021-07-13 10:59:34
  * @LastEditors: wish.WuJunLong
  */
 
@@ -37,7 +37,7 @@ export default class index extends Component {
         train_date_end: "", //类型：String  必有字段  备注：出发时间end
         pay_status: "", //类型：String  必有字段  备注：支付状态：1:未支付 2:已支付 3:已退款 4:已取消
         pay_type: "", //类型：String  必有字段  备注：支付方式：1:预存款 2：授信支付 3：易宝 4支付宝
-        status: "", //类型：String  必有字段  备注：状态 1 占座中 2占座成功待支付 3待出票 4已出票 5已取消 6占座失败 7出票失败
+        status: "", //类型：String  必有字段  备注：状态 1 改签中 2待支付 3改签中 4已改签 5已取消 6改签中 7出票失败
         is_admin_book: "", //类型：String  必有字段  备注：0 否 1 是管理员代订
         is_settle: "", //类型：String  必有字段  备注：是否结算 1 是 0 否
         created_at_start: "", //类型：String  必有字段  备注：生单时间start
@@ -75,13 +75,13 @@ export default class index extends Component {
     let data = this.state.orderSearch;
     data.status =
       val === "待支付"
-        ? "1"
+        ? 2
         : val === "改签中"
-        ? "2"
+        ? [1, 3, 6]
         : val === "已改签"
-        ? "3"
+        ? 4
         : val === "已取消"
-        ? "5"
+        ? 5
         : "";
     await this.setState({
       orderSearch: data,
@@ -245,7 +245,7 @@ export default class index extends Component {
                         size="small"
                         className="option_pay"
                         type="link"
-                        href={`${this.$parentUrl}pay/${Base64.encode(render.order_no)}`}
+                        href={`/pay/${Base64.encode(render.order_no)}`}
                       >
                         付
                       </Button>

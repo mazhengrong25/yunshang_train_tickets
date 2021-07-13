@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-07-09 15:45:54
+ * @LastEditTime: 2021-07-13 09:16:54
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -344,7 +344,7 @@ export default class index extends Component {
                     <Button
                       className="jump_order_pay"
                       type="link"
-                      href={`${this.$parentUrl}pay/${this.imageBase(
+                      href={`/pay/${this.imageBase(
                         this.state.detailData.order_no
                       )}`}
                     >

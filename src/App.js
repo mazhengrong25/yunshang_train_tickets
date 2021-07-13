@@ -2,7 +2,7 @@
  * @Description: 配置页
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 10:36:06
- * @LastEditTime: 2021-07-12 11:16:58
+ * @LastEditTime: 2021-07-13 09:10:19
  * @LastEditors: wish.WuJunLong
  */
 import React, { Fragment } from "react";
@@ -31,18 +31,18 @@ function App() {
       <BrowserRouter basename="/web/train">
         <Fragment>
           <Switch>
-            <Route exact path="/orderRefund/:id" component={OrderRefund}></Route>
-            <Route exact path="/refundDetail/:id" component={RefundDetail}></Route>
-            <Route exact path="/refundList" component={RefundList}></Route>
-            <Route exact path="/orderChange/:id" component={OrderChange}></Route>
-            <Route exact path="/changeDetail/:id" component={ChangeDetail}></Route>
-            <Route exact path="/changeList" component={ChangeList}></Route>
-            <Route exact path="/orderDetail/:id" component={OrderDetail}></Route>
-            <Route exact path="/orderList" component={OrderList}></Route>
-            <Route exact path="/ticketReservation" component={TicketReservation}></Route>
-            <Route exact path="/ticketInquiry" component={TicketInquiry}></Route>
-            <Route exact path="/home" component={Home} />
-            <Route exact path="/" component={Home} />
+            <Route path="/orderRefund/:id" component={OrderRefund}></Route>
+            <Route path="/refundDetail/:id" component={RefundDetail}></Route>
+            <Route path="/refundList" component={RefundList}></Route>
+            <Route path="/orderChange/:id" component={OrderChange}></Route>
+            <Route path="/changeDetail/:id" component={ChangeDetail}></Route>
+            <Route path="/changeList" component={ChangeList}></Route>
+            <Route path="/orderDetail/:id" component={OrderDetail}></Route>
+            <Route path="/orderList" component={OrderList}></Route>
+            <Route path="/ticketReservation" component={TicketReservation}></Route>
+            <Route path="/ticketInquiry" component={TicketInquiry}></Route>
+            <Route path="/home" component={Home} />
+            <Route path="/" component={Home} />
             <Redirect to={"/home"} />
           </Switch>
         </Fragment>

@@ -263,8 +263,8 @@ module.exports = function (webpackEnv) {
           },
           sourceMap: shouldUseSourceMap,
           //使用多进程并行运行可提高构建速度。并发运行的默认次数：os.cpus().length - 1
-          parallel: true, 
-          extractComments: false, 
+          parallel: true,
+          extractComments: false,
         }),
         // This is only used in production mode
         new OptimizeCSSAssetsPlugin({
@@ -716,6 +716,9 @@ module.exports = function (webpackEnv) {
           },
         }),
     ].filter(Boolean),
+    devServer: {
+      historyApiFallback: true,
+    },
     // Some libraries import Node modules but don't use them in the browser.
     // Tell webpack to provide empty mocks for them so importing them works.
     node: {

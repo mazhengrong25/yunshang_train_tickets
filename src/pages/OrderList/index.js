@@ -2,7 +2,7 @@
  * @Description: 订单列表
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-07-09 15:59:41
+ * @LastEditTime: 2021-07-13 10:11:43
  * @LastEditors: wish.WuJunLong
  */
 
@@ -234,6 +234,17 @@ export default class index extends Component {
         });
       }
     });
+  }
+
+  // 判断订单状态
+  orderStatus(val) {
+    if (val.refund_order !== null) {
+      return val.refund_order.passengers.length !== val.passengers.length;
+    } else if (val.change_order !== null) {
+      return val.change_order.passengers.length !== val.passengers.length;
+    } else {
+      return false;
+    }
   }
 
   // 跳转详情页
@@ -524,7 +535,7 @@ export default class index extends Component {
                         size="small"
                         className="option_pay"
                         type="link"
-                        href={`${this.$parentUrl}pay/${Base64.encode(render.order_no)}`}
+                        href={`/pay/${Base64.encode(render.order_no)}`}
                       >
                         付
                       </Button>
@@ -532,8 +543,7 @@ export default class index extends Component {
                       ""
                     )}
                     {(render.status === 4 || render.status === 7) &&
-                    render.refund_order === null &&
-                    render.change_order === null ? (
+                    this.orderStatus(render) ? (
                       <Button
                         size="small"
                         className="option_refund"
@@ -544,9 +554,7 @@ export default class index extends Component {
                     ) : (
                       ""
                     )}
-                    {render.status === 4 &&
-                    render.change_order === null &&
-                    render.refund_order === null ? (
+                    {render.status === 4 && this.orderStatus(render) ? (
                       <Button
                         size="small"
                         className="option_cancel"

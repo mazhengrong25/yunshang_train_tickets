@@ -2,7 +2,7 @@
  * @Description: 改签详情
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
- * @LastEditTime: 2021-07-06 11:26:45
+ * @LastEditTime: 2021-07-13 11:01:11
  * @LastEditors: wish.WuJunLong
  */
 
@@ -210,6 +210,8 @@ export default class index extends Component {
                       "待支付"
                     ) : this.state.detailData.status === 3 ? (
                       "改签成功"
+                    ) : this.state.detailData.status === 4 ? (
+                      "已出票"
                     ) : this.state.detailData.status === 5 ? (
                       "已取消"
                     ) : this.state.detailData.status === 6 ? (
@@ -238,7 +240,7 @@ export default class index extends Component {
                     <Button
                       className="jump_order_pay"
                       type="link"
-                      href={`${this.$parentUrl}pay/${this.imageBase(
+                      href={`/pay/${this.imageBase(
                         this.state.detailData.order_no
                       )}`}
                     >

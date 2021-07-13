@@ -2,7 +2,7 @@
  * @Description: 城市选择组件
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 13:52:05
- * @LastEditTime: 2021-05-28 11:49:41
+ * @LastEditTime: 2021-07-13 15:11:51
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -329,10 +329,11 @@ export default class index extends Component {
                 overlayClassName="city_list_modal"
                 getPopupContainer={(triggerNode) => triggerNode.parentNode}
                 onCancel={() => this.clearModal()}
-                placement="bottomRight"
+                placement="bottomLeft"
                 destroyTooltipOnHide={true}
                 visible={this.state.startPopover === "start"}
                 zIndex={3000}
+                autoAdjustOverflow={false}
                 content={() => (
                   <>
                     <div className="modal_title">
@@ -452,10 +453,11 @@ export default class index extends Component {
                 overlayClassName="city_list_modal"
                 getPopupContainer={(triggerNode) => triggerNode.parentNode}
                 onCancel={() => this.clearModal()}
-                placement="bottomRight"
+                placement="bottomLeft"
                 destroyTooltipOnHide={true}
                 visible={this.state.startPopover === "end"}
                 zIndex={3000}
+                autoAdjustOverflow={false}
                 content={() => (
                   <>
                     <div className="modal_title">
