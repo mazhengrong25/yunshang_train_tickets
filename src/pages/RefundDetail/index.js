@@ -2,12 +2,12 @@
  * @Description: 退票详情
  * @Author: mzr
  * @Date: 2021-06-21 16:18:48
- * @LastEditTime: 2021-07-06 13:52:59
+ * @LastEditTime: 2021-07-14 17:28:27
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
 
-import { message, Table, Button, Input } from "antd";
+import { message, Table, Button, Input, Popover } from "antd";
 
 import InsuranceIcon from "../../static/insurance_icon.png"; // 保险图标
 import TicketIcon from "../../static/trip_icon.png"; // 行程图标
@@ -53,8 +53,18 @@ export default class index extends Component {
     }
     this.$axios.get(`/train/order/refund/detail/${this.state.orderNo}`).then((res) => {
       if (res.code === 0) {
+        let newViaStop = {
+          key: 0,
+          station: {
+            departure_name: res.data.segments[0].from_city,
+            arrive_name: res.data.segments[0].to_city,
+          },
+        };
+        let newData = res.data;
+        newData["key"] = 0;
         this.setState({
-          detailData: res.data,
+          viaStopPopoverMessage: newViaStop,
+          detailData: newData,
         });
         console.log("详情", this.state.detailData);
       }
@@ -200,6 +210,8 @@ export default class index extends Component {
             <div className="left_no">
               <div className="header_title">订单编号</div>
               <p>{this.state.orderNo}</p>
+              <div className="header_title">原订单号</div>
+              <p>{this.state.detailData.train_order_no}</p>
             </div>
 
             <div className="left_box">
@@ -223,15 +235,23 @@ export default class index extends Component {
                         : "#333333",
                   }}
                 >
-                  {this.state.detailData.status === 1
-                    ? "退票中"
-                    : this.state.detailData.status === 2
-                    ? "已退票"
-                    : this.state.detailData.status === 3
-                    ? "已取消"
-                    : this.state.detailData.status === 5
-                    ? "退票失败"
-                    : this.state.detailData.status || "-"}
+                  {this.state.detailData.status === 1 ? (
+                    "退票中"
+                  ) : this.state.detailData.status === 2 ? (
+                    "已退票"
+                  ) : this.state.detailData.status === 3 ? (
+                    "已取消"
+                  ) : this.state.detailData.status === 5 ? (
+                    <Popover
+                      content={this.state.detailData.status_remark}
+                      title={false}
+                      trigger="hover"
+                    >
+                      <span style={{ cursor: "pointer" }}>退票失败</span>
+                    </Popover>
+                  ) : (
+                    this.state.detailData.status || "-"
+                  )}
                 </span>
               </p>
               {this.state.detailData.status === 2 ? (

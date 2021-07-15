@@ -2,7 +2,7 @@
  * @Description: 改签列表
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 09:26:48
- * @LastEditTime: 2021-07-13 10:59:34
+ * @LastEditTime: 2021-07-14 18:31:29
  * @LastEditors: wish.WuJunLong
  */
 
@@ -52,6 +52,8 @@ export default class index extends Component {
       isSegmentsModalData: {}, // 弹窗数据
       isSegmentsModalType: "", // 弹窗状态
       isSegmentsModalBtnStatus: false, // 弹窗按钮状态
+
+      isAdmin: false, // 管理员状态
     };
   }
 
@@ -63,6 +65,7 @@ export default class index extends Component {
         this.setState({
           orderList: res.data,
           tableLoading: false,
+          isAdmin: res.is_admin,
         });
       } else {
         message.warning(res.msg);
@@ -150,7 +153,7 @@ export default class index extends Component {
       source: "YunKu", //类型：String  必有字段  备注：数据源
       order: {
         //类型：Object  必有字段  备注：订单信息
-        order_no: val.train_order_no, //类型：String  必有字段  备注：订单号
+        order_no: val.change_no, //类型：String  必有字段  备注：订单号
         out_trade_no: val.out_trade_no, //类型：String  必有字段  备注：外部订单号
       },
     };
@@ -168,6 +171,14 @@ export default class index extends Component {
       } else {
         message.warning(res.msg);
       }
+    });
+  }
+
+  // 退票单跳转
+  jumpRefundPage(val) {
+    this.props.history.push({
+      pathname: "/orderRefund/" + val.change_no,
+      query: { changeType: true },
     });
   }
 
@@ -245,9 +256,21 @@ export default class index extends Component {
                         size="small"
                         className="option_pay"
                         type="link"
-                        href={`/pay/${Base64.encode(render.order_no)}`}
+                        href={`/pay/${Base64.encode(render.change_no)}`}
                       >
                         付
+                      </Button>
+                    ) : (
+                      ""
+                    )}
+                    {(render.status === 4 || render.status === 7) &&
+                    render.refund_orders.length < 1 ? (
+                      <Button
+                        size="small"
+                        className="option_refund"
+                        onClick={() => this.jumpRefundPage(render)}
+                      >
+                        退
                       </Button>
                     ) : (
                       ""
@@ -267,6 +290,16 @@ export default class index extends Component {
                   );
                 }}
               />
+              {this.state.isAdmin ? (
+                <Column
+                  title="分销商"
+                  render={(render) =>
+                    render.distributor_user ? render.distributor_user.company_name : "-"
+                  }
+                />
+              ) : (
+                ""
+              )}
               <Column
                 title="行程"
                 render={(text, render) => {
@@ -307,7 +340,7 @@ export default class index extends Component {
               />
               <Column
                 title="需支付"
-                dataIndex="insurance_price"
+                dataIndex="need_pay_amount"
                 render={(text) => text || "-"}
               />
               <Column
@@ -328,6 +361,8 @@ export default class index extends Component {
                           ? "#FF0000"
                           : text === 3
                           ? "#5AB957"
+                          : text === 4 && render.refund_orders.length > 0
+                          ? "#FF0000"
                           : text === 4
                           ? "#0070E2"
                           : text === 5
@@ -344,7 +379,9 @@ export default class index extends Component {
                     ) : text === 2 ? (
                       "待支付"
                     ) : text === 3 ? (
-                      "改签成功"
+                      "出票中"
+                    ) : text === 4 && render.refund_orders.length > 0 ? (
+                      "已退票"
                     ) : text === 4 ? (
                       "已出票"
                     ) : text === 5 ? (
@@ -358,7 +395,13 @@ export default class index extends Component {
                         <span style={{ cursor: "pointer" }}>占座失败</span>
                       </Popover>
                     ) : text === 7 ? (
-                      "出票失败"
+                      <Popover
+                        content={render.status_remark}
+                        title={false}
+                        trigger="hover"
+                      >
+                        <span style={{ cursor: "pointer" }}>出票失败</span>
+                      </Popover>
                     ) : (
                       text
                     )}

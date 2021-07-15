@@ -3,7 +3,7 @@
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
  * @LastEditors: wish.WuJunLong
- * @LastEditTime: 2021-07-09 17:15:24
+ * @LastEditTime: 2021-07-15 14:11:22
  */
 
 import React, { Component } from "react";
@@ -13,9 +13,15 @@ import { Button, message, Table, Popover, DatePicker, Modal } from "antd";
 import TicketSearchPage from "../TicketInquiry/index"; // 机票列表
 import ChangeOrderModal from "../../components/cancelOrderModal"; // 改签确认弹窗
 
+import OccupySeatModal from "../../components/occupySeatModal"; // 占座弹窗
+
+import { Base64 } from "js-base64";
+
 import "./OrderChange.scss";
 
 const { Column } = Table;
+
+let child;
 
 export default class index extends Component {
   constructor(props) {
@@ -36,6 +42,11 @@ export default class index extends Component {
       isSegmentsModalData: {}, // 弹窗数据
       isSegmentsModalType: "", // 弹窗状态
       isSegmentsModalBtnStatus: false, // 弹窗按钮状态
+
+      // 占座中弹窗
+      isOccupyNo: "",
+      isOccupyModal: false,
+      isOccupyStatus: 0,
     };
   }
 
@@ -59,11 +70,68 @@ export default class index extends Component {
     }
     this.$axios.post(`/train/order/detail/${this.state.orderNo}`).then((res) => {
       if (res.code === 0) {
+        let apiData = res.data;
+
+        let changePassenger = [];
+        let refundPassenger = [];
+
+        if (apiData.change_orders && apiData.change_orders.length > 0) {
+          changePassenger = apiData.change_orders;
+        }
+        if (apiData.refund_orders && apiData.refund_orders.length > 0) {
+          refundPassenger = apiData.refund_orders;
+        }
+
+        // 处理乘客是否改退
+        apiData.passenger = this.passengerStatus(
+          changePassenger,
+          refundPassenger,
+          apiData.passengers
+        );
+
         this.setState({
-          detailData: res.data,
+          detailData: apiData,
         });
+      } else {
+        message.warning(res.msg);
       }
     });
+  }
+
+  // 处理乘客状态
+  passengerStatus(change, refund, passenger) {
+    console.log(change, refund, passenger);
+    if (change.length > 0) {
+      change.forEach((item) => {
+        item.passengers.forEach((titem) => {
+          passenger.forEach((oitem) => {
+            if (
+              titem.PassengerName === oitem.PassengerName &&
+              titem.CredentialNo === oitem.CredentialNo
+            ) {
+              oitem.status = "change";
+            }
+          });
+        });
+      });
+    }
+
+    if (refund.length > 0) {
+      refund.forEach((item) => {
+        item.passengers.forEach((titem) => {
+          passenger.forEach((oitem) => {
+            if (
+              titem.PassengerName === oitem.PassengerName &&
+              titem.CredentialNo === oitem.CredentialNo
+            ) {
+              oitem.status = "refund";
+            }
+          });
+        });
+      });
+    }
+
+    return passenger;
   }
 
   // 查询新车次
@@ -77,7 +145,7 @@ export default class index extends Component {
       arrive: this.state.detailData.to_station,
       departure_date: this.$moment(this.state.newTicketTime).format("YYYY-MM-DD"),
       is_change: true,
-      change_time: this.state.detailData.train_date
+      change_time: this.state.detailData.train_date,
     };
 
     this.setState({
@@ -188,7 +256,7 @@ export default class index extends Component {
     let newsSeat_info = {};
     this.state.selectPassengerList.forEach((item) => {
       passengerId.push(item.id);
-      if (item.id && item.seat_info) { 
+      if (item.id && item.seat_info) {
         newsSeat_info[item.id] = item.seat_info;
       }
     });
@@ -219,9 +287,14 @@ export default class index extends Component {
           isSegmentsModalBtnStatus: false,
           isSegmentsModal: false,
         });
-        this.getDetailData();
-        message.success(res.msg);
-        this.props.history.push({ pathname: "/changeDetail/" + res.data.change_order_no });
+
+        this.openOccupy(res.data.change_order_no);
+
+        // this.getDetailData();
+        // message.success(res.msg);
+        // this.props.history.push({
+        //   pathname: "/changeDetail/" + res.data.change_order_no,
+        // });
       } else {
         this.setState({
           isSegmentsModalBtnStatus: false,
@@ -231,12 +304,45 @@ export default class index extends Component {
     });
   }
 
+  // 占座成功
+  orderSuccess = () => {
+    window.location.href = `/pay/${Base64.encode(this.state.isOccupyNo)}`;
+  };
+
+  onRef(ref) {
+    child = ref;
+  }
+
+  // 打开占座弹窗
+  async openOccupy(val) {
+    await this.setState({
+      isOccupyNo: val,
+      isOccupyModal: true,
+      isOccupyStatus: Math.floor(Math.random() * 100) + 20,
+    });
+    await child.startTime();
+  }
+
+  // 跳转详情
+  closeOccupy = () => {
+    this.props.history.push({ pathname: "/changeDetail/" + this.state.isOccupyNo });
+  };
+  // 重选车次
+  jumpOccupy = () => {
+    this.props.history.goBack();
+  };
+
   render() {
     const rowSelection = {
       onChange: (selectedRowKeys, selectedRows) => {
         this.setState({
           selectPassengerList: selectedRows,
         });
+      },
+      getCheckboxProps: (record) => {
+        if (record.status) {
+          return { disabled: true };
+        }
       },
     };
     return (
@@ -268,8 +374,16 @@ export default class index extends Component {
                         ? "#FF0000"
                         : this.state.detailData.status === 3
                         ? "#5AB957"
-                        : this.state.detailData.status === 4
+                        : this.state.detailData.status === 4 &&
+                          this.state.detailData.refund_orders.length < 1 &&
+                          this.state.detailData.change_orders.length < 1
                         ? "#0070E2"
+                        : this.state.detailData.status === 4 &&
+                          this.state.detailData.refund_orders.length > 0
+                        ? "#FF0000"
+                        : this.state.detailData.status === 4 &&
+                          this.state.detailData.change_orders.length > 0
+                        ? "#fb9826"
                         : this.state.detailData.status === 5
                         ? "#333333"
                         : this.state.detailData.status === 6
@@ -285,8 +399,16 @@ export default class index extends Component {
                     "待支付"
                   ) : this.state.detailData.status === 3 ? (
                     "待出票"
-                  ) : this.state.detailData.status === 4 ? (
+                  ) : this.state.detailData.status === 4 &&
+                    this.state.detailData.refund_orders.length < 1 &&
+                    this.state.detailData.change_orders.length < 1 ? (
                     "已出票"
+                  ) : this.state.detailData.status === 4 &&
+                    this.state.detailData.refund_orders.length > 0 ? (
+                    "已退票"
+                  ) : this.state.detailData.status === 4 &&
+                    this.state.detailData.change_orders.length > 0 ? (
+                    "已改签"
                   ) : this.state.detailData.status === 5 ? (
                     "已取消"
                   ) : this.state.detailData.status === 6 ? (
@@ -297,8 +419,17 @@ export default class index extends Component {
                     >
                       <span style={{ cursor: "pointer" }}>占座失败</span>
                     </Popover>
+                  ) : this.state.detailData.status === 7 &&
+                    this.state.detailData.refund_orders.length > 0 ? (
+                    "已退票"
                   ) : this.state.detailData.status === 7 ? (
-                    "出票失败"
+                    <Popover
+                      content={this.state.detailData.status_remark}
+                      title={false}
+                      trigger="hover"
+                    >
+                      <span style={{ cursor: "pointer" }}>出票失败</span>
+                    </Popover>
                   ) : (
                     this.state.detailData.status || "-"
                   )}
@@ -315,9 +446,7 @@ export default class index extends Component {
                   <Button
                     className="jump_order_pay"
                     type="link"
-                    href={`/pay/${this.imageBase(
-                      this.state.detailData.order_no
-                    )}`}
+                    href={`/pay/${this.imageBase(this.state.detailData.order_no)}`}
                   >
                     立即支付
                   </Button>
@@ -357,7 +486,35 @@ export default class index extends Component {
                 ...rowSelection,
               }}
             >
-              <Column title="乘车人" dataIndex="PassengerName" />
+              <Column
+                title="乘车人"
+                render={(render) => (
+                  <>
+                    {render.PassengerName}
+                    {render.status ? (
+                      <div
+                        className="passenger_status_mask"
+                        style={{
+                          color:
+                            render.status === "change"
+                              ? "#fb9826"
+                              : render.status === "refund"
+                              ? "#FF0000"
+                              : "#FF0000",
+                        }}
+                      >
+                        {render.status === "change"
+                          ? "已改签"
+                          : render.status === "refund"
+                          ? "已退票"
+                          : "订单状态已修改"}
+                      </div>
+                    ) : (
+                      ""
+                    )}
+                  </>
+                )}
+              />
               <Column
                 title="乘客类型"
                 dataIndex="PassengerType"
@@ -559,6 +716,7 @@ export default class index extends Component {
           </div>
         </Modal>
 
+        {/* 订单确认弹窗 */}
         <ChangeOrderModal
           isSegmentsModalType="改签"
           isSegmentsModal={this.state.isSegmentsModal}
@@ -567,6 +725,17 @@ export default class index extends Component {
           submitModalBtn={() => this.submitModalBtn()}
           closeModalBtn={() => this.closeModalBtn()}
         ></ChangeOrderModal>
+
+        {/* 占座弹窗 */}
+        <OccupySeatModal
+          isOccupyNo={this.state.isOccupyNo}
+          isOccupyModal={this.state.isOccupyModal}
+          isOccupyStatus={this.state.isOccupyStatus}
+          closeOccupy={() => this.closeOccupy()}
+          orderSuccess={() => this.orderSuccess()}
+          jumpOccupy={() => this.jumpOccupy()}
+          onRef={this.onRef}
+        ></OccupySeatModal>
       </div>
     );
   }

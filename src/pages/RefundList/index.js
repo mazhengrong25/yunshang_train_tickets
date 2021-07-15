@@ -2,16 +2,16 @@
  * @Description: 退票列表
  * @Author: mzr
  * @Date: 2021-06-21 16:16:31
- * @LastEditTime: 2021-07-09 09:55:22
+ * @LastEditTime: 2021-07-14 17:27:33
  * @LastEditors: wish.WuJunLong
  */
-import React, { Component } from 'react'
+import React, { Component } from "react";
 
-import './RefundList.scss'
+import "./RefundList.scss";
 
 // import { Base64 } from "js-base64";
 
-import { Button, Pagination, Table, message} from "antd";
+import { Button, Pagination, Table, message, Popover } from "antd";
 
 // import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
 
@@ -21,54 +21,62 @@ export default class index extends Component {
   constructor(props) {
     super(props);
     this.state = {
-
       refundList: [], // 订单列表
       tableLoading: true, //  表格加载
 
-      orderStatusList:["全部","退票中","已退票","已取消","退票失败"],
+      orderStatusList: ["全部", "退票中", "已退票", "已取消", "退票失败"],
       orderStatusActive: "全部",
       orderNumberData: {}, // 订单状态数量
 
       orderSearch: {
-        status:"", // 退票状态
+        status: "", // 退票状态
       },
 
       isSegmentsModal: false, // 取消订单弹窗
       isSegmentsModalData: {}, // 弹窗数据
       isSegmentsModalType: "", // 弹窗状态
       isSegmentsModalBtnStatus: false, // 弹窗按钮状态
-    }
+
+      isAdmin: false, // 管理员状态
+    };
   }
 
   componentDidMount() {
-
     this.getRefundList();
     this.getRefundDataCount();
-  
   }
 
   // 获取退票列表
   getRefundList() {
-    let data = this.state.orderSearch
-    this.$axios.post("/train/order/refund/list",data).then((res) => {
-      if(res.code === 0) {
+    let data = this.state.orderSearch;
+    this.$axios.post("/train/order/refund/list", data).then((res) => {
+      if (res.code === 0) {
         this.setState({
           refundList: res.data,
-          tableLoading: false
-        })
-        console.log('退票列表',this.state.refundList)
-      }else {
+          tableLoading: false,
+          isAdmin: res.is_admin,
+        });
+        console.log("退票列表", this.state.refundList);
+      } else {
         message.warning(res.msg);
       }
-    })
+    });
   }
 
   // 头部状态切换
   async isActiveHeader(val) {
-    console.log('头部状态',val)
+    console.log("头部状态", val);
     let data = this.state.orderSearch;
     data.status =
-      val === "退票中" ? "1" : val === "已退票" ? "2" : val === "已取消" ? "3" : val === "退票失败" ? "5" : "";
+      val === "退票中"
+        ? "1"
+        : val === "已退票"
+        ? "2"
+        : val === "已取消"
+        ? "3"
+        : val === "退票失败"
+        ? "5"
+        : "";
     await this.setState({
       orderSearch: data,
       orderStatusActive: val,
@@ -79,26 +87,25 @@ export default class index extends Component {
   // 获取退票列表数量
   getRefundDataCount() {
     this.$axios.get("/train/order/refund/count").then((res) => {
-      if(res.code === 0) {
+      if (res.code === 0) {
         this.setState({
-          orderNumberData: res.data
-        })
-      }else {
-        message.warning(res.msg)
+          orderNumberData: res.data,
+        });
+      } else {
+        message.warning(res.msg);
       }
-    })
+    });
   }
 
   // 列表分页切换
   changePagination = async (page, pageSize) => {
-    let data = this.state.orderSearch
+    let data = this.state.orderSearch;
     data.page = page;
     data.limit = pageSize;
     await this.setState({
       orderSearch: data,
     });
   };
-
 
   // 跳转退票详情
   jumpDetail(val) {
@@ -128,7 +135,7 @@ export default class index extends Component {
       isSegmentsModalBtnStatus: true,
     });
     let val = this.state.isSegmentsModalData;
-    console.log('退票',val)
+    console.log("退票", val);
     let data = {
       channel: "Di", //类型：String  必有字段  备注：渠道
       source: val.source, //类型：String  必有字段  备注：数据源
@@ -158,7 +165,6 @@ export default class index extends Component {
   render() {
     return (
       <div className="refund_list">
-
         <div className="order_header">
           {this.state.orderStatusList.map((item, index) => (
             <div
@@ -173,13 +179,13 @@ export default class index extends Component {
                 {item === "全部"
                   ? this.state.refundList.total || 0
                   : item === "退票中"
-                  ? this.state.orderNumberData['apply'] || 0
+                  ? this.state.orderNumberData["apply"] || 0
                   : item === "已退票"
-                  ? this.state.orderNumberData['over'] || 0
+                  ? this.state.orderNumberData["over"] || 0
                   : item === "已取消"
-                  ? this.state.orderNumberData['channel'] || 0
+                  ? this.state.orderNumberData["channel"] || 0
                   : item === "退票失败"
-                  ? this.state.orderNumberData['fail'] || 0
+                  ? this.state.orderNumberData["fail"] || 0
                   : 0}
               </span>
             </div>
@@ -235,6 +241,16 @@ export default class index extends Component {
                   );
                 }}
               />
+              {this.state.isAdmin ? (
+                <Column
+                  title="分销商"
+                  render={(render) =>
+                    render.distributor_user ? render.distributor_user.company_name : "-"
+                  }
+                />
+              ) : (
+                ""
+              )}
               <Column
                 title="票号"
                 dataIndex="ticket_number"
@@ -272,35 +288,40 @@ export default class index extends Component {
               />
               <Column
                 title="退票状态"
-                dataIndex="status"
-                render={(text) => (
+                render={(render) => (
                   <span
                     style={{
                       color:
-                        text === 1
+                        render.status === 1
                           ? "#0070E2"
-                          : text === 5
+                          : render.status === 5
                           ? "#FF0000"
                           : "#333333",
                     }}
                   >
-                    {text === 1 ? (
+                    {render.status === 1 ? (
                       "退票中"
-                    ) : text === 2 ? (
+                    ) : render.status === 2 ? (
                       "已退票"
-                    ) : text === 3 ? (
+                    ) : render.status === 3 ? (
                       "已取消"
-                    ) : text === 5 ? (
-                      "退票失败"
+                    ) : render.status === 5 ? (
+                      <Popover
+                        content={render.status_remark}
+                        title={false}
+                        trigger="hover"
+                      >
+                        <span style={{ cursor: "pointer" }}>退票失败</span>
+                      </Popover>
                     ) : (
-                      text
+                      render.status
                     )}
                   </span>
                 )}
               />
               <Column
                 title="申请人"
-                render={(text,render) => render.train_order.book_user || "-"}
+                render={(text, render) => render.train_order.book_user || "-"}
               />
               <Column
                 title="申请时间"
@@ -320,7 +341,7 @@ export default class index extends Component {
             </div>
           </div>
         </div>
-        
+
         {/* <CancelOrderModal
           isSegmentsModalType={this.state.isSegmentsModalType}
           isSegmentsModal={this.state.isSegmentsModal}
@@ -329,8 +350,7 @@ export default class index extends Component {
           submitModalBtn={() => this.submitModalBtn()}
           closeModalBtn={() => this.closeModalBtn()}
         ></CancelOrderModal> */}
-
       </div>
-    )
+    );
   }
 }

@@ -23,6 +23,9 @@
             font-size: 14px;
             font-weight: bold;
             color: #000000;
+            &:not(:last-child) {
+              margin-right: 40px;
+            }
           }
         }
         .left_box {

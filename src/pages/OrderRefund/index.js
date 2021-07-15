@@ -2,7 +2,7 @@
  * @Description: 退票详情
  * @Author: mzr
  * @Date: 2021-06-21 10:38:35
- * @LastEditTime: 2021-07-13 15:07:05
+ * @LastEditTime: 2021-07-15 09:33:15
  * @LastEditors: wish.WuJunLong
  */
 
@@ -55,12 +55,68 @@ export default class index extends Component {
     }
     this.$axios.post(`/train/order/detail/${this.state.orderNo}`).then((res) => {
       if (res.code === 0) {
+        let apiData = res.data;
+
+        let changePassenger = [];
+        let refundPassenger = [];
+
+        if (apiData.change_orders && apiData.change_orders.length > 0) {
+          changePassenger = apiData.change_orders;
+        }
+        if (apiData.refund_orders && apiData.refund_orders.length > 0) {
+          refundPassenger = apiData.refund_orders;
+        }
+
+        // 处理乘客是否改退
+        apiData.passenger = this.passengerStatus(
+          changePassenger,
+          refundPassenger,
+          apiData.passengers
+        );
+
         this.setState({
-          detailData: res.data,
+          detailData: apiData,
         });
-        console.log("detailData", this.state.detailData);
+      } else {
+        message.warning(res.msg);
       }
     });
+  }
+
+  // 处理乘客状态
+  passengerStatus(change, refund, passenger) {
+    console.log(change, refund, passenger);
+    if (change.length > 0) {
+      change.forEach((item) => {
+        item.passengers.forEach((titem) => {
+          passenger.forEach((oitem) => {
+            if (
+              titem.PassengerName === oitem.PassengerName &&
+              titem.CredentialNo === oitem.CredentialNo
+            ) {
+              oitem.status = "change";
+            }
+          });
+        });
+      });
+    }
+
+    if (refund.length > 0) {
+      refund.forEach((item) => {
+        item.passengers.forEach((titem) => {
+          passenger.forEach((oitem) => {
+            if (
+              titem.PassengerName === oitem.PassengerName &&
+              titem.CredentialNo === oitem.CredentialNo
+            ) {
+              oitem.status = "refund";
+            }
+          });
+        });
+      });
+    }
+
+    return passenger;
   }
 
   // 获取经停站信息
@@ -173,7 +229,7 @@ export default class index extends Component {
         });
         message.success(res.msg);
         this.props.history.push({
-          pathname: "/refundDetail/" + this.state.orderNo,
+          pathname: "/refundDetail/" + res.data.refund_no,
           query: { changeType: true },
         });
       } else {
@@ -191,6 +247,11 @@ export default class index extends Component {
         this.setState({
           selectPassengerList: selectedRows,
         });
+      },
+      getCheckboxProps: (record) => {
+        if (record.status) {
+          return { disabled: true };
+        }
       },
     };
     return (
@@ -222,8 +283,14 @@ export default class index extends Component {
                         ? "#FF0000"
                         : this.state.detailData.status === 3
                         ? "#5AB957"
-                        : this.state.detailData.status === 4
+                        : this.state.detailData.status === 4 &&
+                          this.state.detailData.refund_orders.length < 1 
                         ? "#0070E2"
+                        : this.state.detailData.status === 4 &&
+                          this.state.detailData.refund_orders.length > 0
+                        ? "#FF0000"
+                        : this.state.detailData.status === 4 
+                        ? "#fb9826"
                         : this.state.detailData.status === 5
                         ? "#333333"
                         : this.state.detailData.status === 6
@@ -239,8 +306,14 @@ export default class index extends Component {
                     "待支付"
                   ) : this.state.detailData.status === 3 ? (
                     "待出票"
-                  ) : this.state.detailData.status === 4 ? (
+                  ) : this.state.detailData.status === 4 &&
+                    this.state.detailData.refund_orders.length < 1 ? (
                     "已出票"
+                  ) : this.state.detailData.status === 4 &&
+                    this.state.detailData.refund_orders.length > 0 ? (
+                    "已退票"
+                  ) : this.state.detailData.status === 4 ? (
+                    "已改签"
                   ) : this.state.detailData.status === 5 ? (
                     "已取消"
                   ) : this.state.detailData.status === 6 ? (
@@ -251,8 +324,17 @@ export default class index extends Component {
                     >
                       <span style={{ cursor: "pointer" }}>占座失败</span>
                     </Popover>
+                  ) : this.state.detailData.status === 7 &&
+                    this.state.detailData.refund_orders.length > 0 ? (
+                    "已退票"
                   ) : this.state.detailData.status === 7 ? (
-                    "出票失败"
+                    <Popover
+                      content={this.state.detailData.status_remark}
+                      title={false}
+                      trigger="hover"
+                    >
+                      <span style={{ cursor: "pointer" }}>出票失败</span>
+                    </Popover>
                   ) : (
                     this.state.detailData.status || "-"
                   )}
@@ -269,9 +351,7 @@ export default class index extends Component {
                   <Button
                     className="jump_order_pay"
                     type="link"
-                    href={`/pay/${this.imageBase(
-                      this.state.detailData.order_no
-                    )}`}
+                    href={`/pay/${this.imageBase(this.state.detailData.order_no)}`}
                   >
                     立即支付
                   </Button>
@@ -386,7 +466,7 @@ export default class index extends Component {
             </p>
           </div>
           <div className="insurance_main">
-            {String(this.state.detailData.insurance_msg).length > 10 ? (
+            {Number(this.state.detailData.insurance_price) > 10 ? (
               <>
                 <div className="main_title">已选保险</div>
                 <div className="main_info">
@@ -397,9 +477,7 @@ export default class index extends Component {
                 <div className="main_price">
                   <span>
                     &yen;
-                    {this.state.detailData.insurance_msg
-                      ? this.state.detailData.insurance_msg.default_dis_price
-                      : "-"}
+                    {this.state.detailData.insurance_price || "-"}
                   </span>
                   元/人
                 </div>
@@ -424,7 +502,35 @@ export default class index extends Component {
                 ...rowSelection,
               }}
             >
-              <Column title="乘车人" dataIndex="PassengerName" />
+              <Column
+                title="乘车人"
+                render={(render) => (
+                  <>
+                    {render.PassengerName}
+                    {render.status ? (
+                      <div
+                        className="passenger_status_mask"
+                        style={{
+                          color:
+                            render.status === "change"
+                              ? "#fb9826"
+                              : render.status === "refund"
+                              ? "#FF0000"
+                              : "#FF0000",
+                        }}
+                      >
+                        {render.status === "change"
+                          ? "已改签"
+                          : render.status === "refund"
+                          ? "已退票"
+                          : "订单状态已修改"}
+                      </div>
+                    ) : (
+                      ""
+                    )}
+                  </>
+                )}
+              />
               <Column
                 title="乘客类型"
                 dataIndex="PassengerType"

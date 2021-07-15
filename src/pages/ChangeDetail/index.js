@@ -2,7 +2,7 @@
  * @Description: 改签详情
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
- * @LastEditTime: 2021-07-13 11:01:11
+ * @LastEditTime: 2021-07-15 11:37:29
  * @LastEditors: wish.WuJunLong
  */
 
@@ -13,6 +13,8 @@ import { Button, message, Table, Popover, Spin, Input } from "antd";
 import CancelOrderModal from "../../components/cancelOrderModal"; // 取消确认弹窗
 
 import "./ChangeDetail.scss";
+
+import { Base64 } from "js-base64";
 
 const { Column } = Table;
 
@@ -142,7 +144,7 @@ export default class index extends Component {
       source: this.state.detailData.source, //类型：String  必有字段  备注：数据源
       order: {
         //类型：Object  必有字段  备注：订单信息
-        order_no: this.state.detailData.order_no, //类型：String  必有字段  备注：订单号
+        order_no: this.state.detailData.change_no, //类型：String  必有字段  备注：订单号
         out_trade_no: this.state.detailData.out_trade_no, //类型：String  必有字段  备注：外部订单号
       },
     };
@@ -162,6 +164,23 @@ export default class index extends Component {
     });
   }
 
+  // 跳转退票页面
+  jumpRefundPage() {
+    this.props.history.push({
+      pathname: "/orderRefund/" + this.state.orderNo,
+      query: { changeType: true },
+    });
+  }
+
+  // 发送短信
+  sendMessage() {
+    try {
+      window.parent.addTab("发送信息", `/admin_msg/sendMsg/${this.state.orderNo}`);
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   render() {
     return (
       <div className="change_detail">
@@ -171,6 +190,8 @@ export default class index extends Component {
               <div className="left_no">
                 <div className="header_title">订单编号</div>
                 <p>{this.state.orderNo}</p>
+                <div className="header_title">原订单号</div>
+                <p>{this.state.detailData.train_order_no}</p>
               </div>
 
               <div className="left_box">
@@ -209,7 +230,7 @@ export default class index extends Component {
                     ) : this.state.detailData.status === 2 ? (
                       "待支付"
                     ) : this.state.detailData.status === 3 ? (
-                      "改签成功"
+                      "出票中"
                     ) : this.state.detailData.status === 4 ? (
                       "已出票"
                     ) : this.state.detailData.status === 5 ? (
@@ -223,7 +244,13 @@ export default class index extends Component {
                         <span style={{ cursor: "pointer" }}>占座失败</span>
                       </Popover>
                     ) : this.state.detailData.status === 7 ? (
-                      "出票失败"
+                      <Popover
+                        content={this.state.detailData.status_remark}
+                        title={false}
+                        trigger="hover"
+                      >
+                        <span style={{ cursor: "pointer" }}>出票失败</span>
+                      </Popover>
                     ) : (
                       this.state.detailData.status || "-"
                     )}
@@ -240,9 +267,7 @@ export default class index extends Component {
                     <Button
                       className="jump_order_pay"
                       type="link"
-                      href={`/pay/${this.imageBase(
-                        this.state.detailData.order_no
-                      )}`}
+                      href={`/pay/${Base64.encode(this.state.detailData.change_no)}`}
                     >
                       立即支付
                     </Button>
@@ -334,13 +359,13 @@ export default class index extends Component {
                     <div className="list_info">
                       <div className="info_status">始</div>
                       <div className="info_date">
-                        {this.$moment(item.departure_time).format("hh:mm")}
+                        {this.$moment(item.departure_time).format("HH:mm")}
                       </div>
                       <div className="info_address">{item.from_city}</div>
                       <div className="info_icon"></div>
                       <div className="info_status">终</div>
                       <div className="info_date">
-                        {this.$moment(item.arrive_time).format("hh:mm")}
+                        {this.$moment(item.arrive_time).format("HH:mm")}
                       </div>
                       <div className="info_address">{item.to_city}</div>
                     </div>
@@ -408,9 +433,19 @@ export default class index extends Component {
             ) : (
               ""
             )}
+            <Button className="detail_btn" onClick={() => this.sendMessage()}>
+              发送短信
+            </Button>
             {this.state.detailData.status === 1 || this.state.detailData.status === 2 ? (
               <Button className="detail_btn" onClick={() => this.orderCancel("取消")}>
                 取消订单
+              </Button>
+            ) : (
+              ""
+            )}
+            {this.state.detailData.status === 4 || this.state.detailData.status === 7 ? (
+              <Button className="detail_btn" onClick={() => this.jumpRefundPage()}>
+                退票
               </Button>
             ) : (
               ""

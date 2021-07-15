@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-07-13 09:16:54
+ * @LastEditTime: 2021-07-15 10:55:42
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -238,6 +238,15 @@ export default class index extends Component {
     });
   }
 
+  // 发送短信
+  sendMessage() {
+    try {
+      window.parent.addTab("发送信息", `/admin_msg/sendMsg/${this.state.orderNo}`);
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   render() {
     return (
       <div className="order_detail">
@@ -270,17 +279,15 @@ export default class index extends Component {
                           : this.state.detailData.status === 3
                           ? "#5AB957"
                           : this.state.detailData.status === 4 &&
-                            this.state.detailData.refund_order === null &&
-                            this.state.detailData.change_order === null
+                            this.state.detailData.refund_orders.length < 1 &&
+                            this.state.detailData.change_orders.length < 1
                           ? "#0070E2"
                           : this.state.detailData.status === 4 &&
-                            this.state.detailData.refund_order === null &&
-                            this.state.detailData.change_order !== null
-                          ? "#fb9826"
-                          : this.state.detailData.status === 4 &&
-                            this.state.detailData.refund_order !== null &&
-                            this.state.detailData.change_order === null
+                            this.state.detailData.refund_orders.length > 0
                           ? "#FF0000"
+                          : this.state.detailData.status === 4 &&
+                            this.state.detailData.change_orders.length > 0
+                          ? "#fb9826"
                           : this.state.detailData.status === 5
                           ? "#333333"
                           : this.state.detailData.status === 6
@@ -297,14 +304,14 @@ export default class index extends Component {
                     ) : this.state.detailData.status === 3 ? (
                       "待出票"
                     ) : this.state.detailData.status === 4 &&
-                      this.state.detailData.refund_order === null &&
-                      this.state.detailData.change_order === null ? (
+                      this.state.detailData.refund_orders.length < 1 &&
+                      this.state.detailData.change_orders.length < 1 ? (
                       "已出票"
                     ) : this.state.detailData.status === 4 &&
-                      this.state.detailData.refund_order !== null ? (
+                      this.state.detailData.refund_orders.length > 0 ? (
                       "已退票"
                     ) : this.state.detailData.status === 4 &&
-                      this.state.detailData.change_order !== null ? (
+                      this.state.detailData.change_orders.length > 0 ? (
                       "已改签"
                     ) : this.state.detailData.status === 5 ? (
                       "已取消"
@@ -317,7 +324,9 @@ export default class index extends Component {
                         <span style={{ cursor: "pointer" }}>占座失败</span>
                       </Popover>
                     ) : this.state.detailData.status === 7 &&
-                      this.state.detailData.refund_order === null ? (
+                      this.state.detailData.refund_orders.length > 0 ? (
+                      "已退票"
+                    ) : this.state.detailData.status === 7 ? (
                       <Popover
                         content={this.state.detailData.status_remark}
                         title={false}
@@ -325,9 +334,6 @@ export default class index extends Component {
                       >
                         <span style={{ cursor: "pointer" }}>出票失败</span>
                       </Popover>
-                    ) : this.state.detailData.status === 7 &&
-                      this.state.detailData.refund_order !== null ? (
-                      "已退票"
                     ) : (
                       this.state.detailData.status || "-"
                     )}
@@ -344,9 +350,7 @@ export default class index extends Component {
                     <Button
                       className="jump_order_pay"
                       type="link"
-                      href={`/pay/${this.imageBase(
-                        this.state.detailData.order_no
-                      )}`}
+                      href={`/pay/${this.imageBase(this.state.detailData.order_no)}`}
                     >
                       立即支付
                     </Button>
@@ -636,6 +640,7 @@ export default class index extends Component {
             ) : (
               ""
             )}
+            <Button className="detail_btn" onClick={() => this.sendMessage()}>发送短信</Button>
             {this.state.detailData.status === 1 || this.state.detailData.status === 2 ? (
               <Button className="detail_btn" onClick={() => this.orderCancel("取消")}>
                 取消订单
@@ -643,18 +648,14 @@ export default class index extends Component {
             ) : (
               ""
             )}
-            {(this.state.detailData.status === 4 || this.state.detailData.status === 7) &&
-            this.state.detailData.refund_order === null &&
-            this.state.detailData.change_order === null ? (
+            {this.state.detailData.status === 4 || this.state.detailData.status === 7 ? (
               <Button className="detail_btn" onClick={() => this.jumpRefundPage()}>
                 退票
               </Button>
             ) : (
               ""
             )}
-            {this.state.detailData.status === 4 &&
-            this.state.detailData.change_order === null &&
-            this.state.detailData.refund_order === null ? (
+            {this.state.detailData.status === 4 ? (
               <Button className="detail_btn" onClick={() => this.jumpChangePage()}>
                 改签
               </Button>

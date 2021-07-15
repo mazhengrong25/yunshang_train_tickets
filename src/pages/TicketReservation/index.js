@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-12 13:42:24
+ * @LastEditTime: 2021-07-15 14:11:42
  * @LastEditors: wish.WuJunLong
  */
 
@@ -303,7 +303,7 @@ export default class index extends Component {
 
   // 乘客信息核验
   passengerVerify(val, type) {
-    if (!val.name || !val.cert_no) {
+    if (!val.name || !val.cert_no || !val.phone) {
       return message.warning("请选择信息完整的乘客进行核验");
     }
     // 判断乘客是否已经经行校验
@@ -740,6 +740,16 @@ export default class index extends Component {
     // });
   };
 
+  // 是否显示占座信息
+  showSeatStatus() {
+    if (this.state.reservationMessage.seat) {
+      return this.state.reservationMessage.seat.name === "无座" ||
+        this.state.reservationMessage.seat.name === "硬座"
+        ? false
+        : true;
+    } else return false;
+  }
+
   // 修改是否接受站票状态
   editStandingStatus = (val) => {
     this.setState({
@@ -915,14 +925,14 @@ export default class index extends Component {
           thisId = res.data[0].id;
         }
 
-        if(res.data.length < 1){
-          let checkPassengerList= this.state.checkedPassenger
-          checkPassengerList.forEach(item => {
-            item.insurance = false
-          })
+        if (res.data.length < 1) {
+          let checkPassengerList = this.state.checkedPassenger;
+          checkPassengerList.forEach((item) => {
+            item.insurance = false;
+          });
           this.setState({
-            checkedPassenger: checkPassengerList
-          })
+            checkedPassenger: checkPassengerList,
+          });
         }
 
         this.setState({
@@ -1102,9 +1112,7 @@ export default class index extends Component {
 
   // 占座成功
   orderSuccess = () => {
-    window.location.href = `${this.$parentUrl}pay/${Base64.encode(
-      this.state.isOccupyNo
-    )}`;
+    window.location.href = `/pay/${Base64.encode(this.state.isOccupyNo)}`;
   };
 
   onRef(ref) {
@@ -1116,7 +1124,7 @@ export default class index extends Component {
     await this.setState({
       isOccupyNo: val,
       isOccupyModal: true,
-      isOccupyStatus: Math.floor(Math.random() * 100) + 150,
+      isOccupyStatus: Math.floor(Math.random() * 100) + 30,
     });
     await child.startTime();
   }
@@ -1817,7 +1825,9 @@ export default class index extends Component {
           ""
         ) : this.state.reservationMessage.train &&
           (this.state.reservationMessage.train.type === "G" ||
-            this.state.reservationMessage.train.type === "D") ? (
+            this.state.reservationMessage.train.type === "D" ||
+            this.state.reservationMessage.train.type === "C") &&
+          this.showSeatStatus() ? (
           <div className="ticket_card cabin_info">
             <div className="title">
               <p className="title_name">在线选座</p>
@@ -1931,12 +1941,14 @@ export default class index extends Component {
               系统将优先为您选择所选座位，无座时将安排其它座位
             </div>
           </div>
-        ) : (
+        ) : this.showSeatStatus() ? (
           <div className="not_cabin_select">
             <img src={WarningIcon} alt="警告图标"></img>
             <span>温馨提示：</span>
             卧铺价格暂显示下铺全价，网上购票铺位随机，实际以占座后铺位价格为准，如有差价则1-3工作日原路退回
           </div>
+        ) : (
+          ""
         )}
 
         {/* 联系人信息 */}

@@ -2,7 +2,7 @@
  * @Description: 订单列表
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-07-13 10:11:43
+ * @LastEditTime: 2021-07-15 09:39:50
  * @LastEditors: wish.WuJunLong
  */
 
@@ -29,6 +29,9 @@ const { Column } = Table;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 
+let timeout;
+let currentValue;
+
 export default class index extends Component {
   constructor(props) {
     super(props);
@@ -52,7 +55,9 @@ export default class index extends Component {
       isSegmentsModalType: "", // 弹窗状态
       isSegmentsModalBtnStatus: false, // 弹窗按钮状态
 
-      isAdmin: false,
+      isAdmin: false, // 判断是否管理员账户
+
+      disDataList: [], // 分销商列表
     };
   }
 
@@ -107,6 +112,8 @@ export default class index extends Component {
         ? "已取消"
         : "全部";
 
+    console.log(data);
+
     await this.setState({
       orderStatusActive: status,
       orderSearch: data,
@@ -136,6 +143,54 @@ export default class index extends Component {
     });
   };
 
+  // 分销商搜索
+  handleSearch = (value) => {
+    if (this.delayedChange(value)) {
+      this.fetch(value, (data) => this.setState({ disDataList: data }));
+    } else {
+      this.setState({ disDataList: [] });
+    }
+  };
+
+  fetch(value, callback) {
+    let _that = this;
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+    currentValue = value;
+
+    function fake() {
+      let data = {
+        key: value,
+      };
+      _that.$axios.get("/searchDis", { params: data }).then((res) => {
+        if (currentValue === value) {
+          console.log(res);
+          const data = [];
+          res.forEach((r) => {
+            data.push({
+              value: r.id,
+              text: r.company_name,
+            });
+          });
+          callback(data);
+        }
+      });
+    }
+
+    timeout = setTimeout(fake, 300);
+  }
+
+  // 防抖
+  delayedChange(val) {
+    if (/.*[\u4e00-\u9fa5]+.*/.test(val)) {
+      return val;
+    } else {
+      return "";
+    }
+  }
+
   // 获取订单列表
   getOrderListData() {
     this.setState({
@@ -162,6 +217,7 @@ export default class index extends Component {
       pay_time_end: this.state.orderSearch.pay_time_end || "", //类型：String  必有字段  备注：支付结束
       train_number: this.state.orderSearch.train_number || "", //类型：String  必有字段  车次
       book_user: this.state.orderSearch.book_user || "", //类型：String  必有字段  订票员
+      dis_id: this.state.orderSearch.dis_id || "", //类型：String  必有字段  分销商
       passenger: this.state.orderSearch.passenger || "", //类型：String  必有字段  乘客
 
       page: this.state.orderSearch.page,
@@ -222,6 +278,7 @@ export default class index extends Component {
       pay_time_end: this.state.orderSearch.pay_time_end || "", //类型：String  必有字段  备注：支付结束
       train_number: this.state.orderSearch.train_number || "", //类型：String  必有字段  车次
       book_user: this.state.orderSearch.book_user || "", //类型：String  必有字段  订票员
+      dis_id: this.state.orderSearch.dis_id || "", //类型：String  必有字段  分销商
       passenger: this.state.orderSearch.passenger || "", //类型：String  必有字段  乘客
 
       page: this.state.orderSearch.page,
@@ -237,14 +294,21 @@ export default class index extends Component {
   }
 
   // 判断订单状态
-  orderStatus(val) {
-    if (val.refund_order !== null) {
-      return val.refund_order.passengers.length !== val.passengers.length;
-    } else if (val.change_order !== null) {
-      return val.change_order.passengers.length !== val.passengers.length;
-    } else {
-      return false;
-    }
+  orderStatusRefund(val) {
+    // if (val.refund_orders && val.refund_orders.length > 0) {
+    // return val.refund_orders.passengers.length !== val.passengers.length;
+    return val.refund_orders.length < 1;
+    // } else {
+    //   return true;
+    // }
+  }
+  orderStatusChange(val) {
+    // if (val.change_orders && val.change_orders.length > 0) {
+    // return val.change_orders.passengers.length !== val.passengers.length;
+    return val.change_orders.length < 1;
+    // } else {
+    //   return true;
+    // }
   }
 
   // 跳转详情页
@@ -468,6 +532,34 @@ export default class index extends Component {
               ""
             )}
 
+            {this.state.isAdmin ? (
+              <div className="search_list">
+                <div className="list_title">分销商</div>
+                <div className="list_item">
+                  <Select
+                    showSearch
+                    value={this.state.orderSearch.dis_id}
+                    placeholder="输入中文进行选择"
+                    defaultActiveFirstOption={false}
+                    showArrow={false}
+                    filterOption={false}
+                    onSearch={this.handleSearch}
+                    onChange={this.searchSelect.bind(this, "dis_id")}
+                    notFoundContent={null}
+                    allowClear
+                  >
+                    {this.state.disDataList.map((d) => (
+                      <Option key={d.value} value={d.value}>
+                        {d.text}
+                      </Option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+
             <div className="search_list" style={{ marginRight: 16 }}>
               <div className="list_title" style={{ width: 88 }}>
                 订单状态
@@ -542,8 +634,7 @@ export default class index extends Component {
                     ) : (
                       ""
                     )}
-                    {(render.status === 4 || render.status === 7) &&
-                    this.orderStatus(render) ? (
+                    {render.status === 4 || render.status === 7 ? (
                       <Button
                         size="small"
                         className="option_refund"
@@ -554,7 +645,7 @@ export default class index extends Component {
                     ) : (
                       ""
                     )}
-                    {render.status === 4 && this.orderStatus(render) ? (
+                    {render.status === 4 ? (
                       <Button
                         size="small"
                         className="option_cancel"
@@ -580,6 +671,18 @@ export default class index extends Component {
                   );
                 }}
               />
+
+              {this.state.isAdmin ? (
+                <Column
+                  title="分销商"
+                  render={(render) =>
+                    render.distributor_user ? render.distributor_user.company_name : "-"
+                  }
+                />
+              ) : (
+                ""
+              )}
+
               <Column
                 title="行程"
                 render={(text, render) => {
@@ -643,17 +746,13 @@ export default class index extends Component {
                           : text === 3
                           ? "#5AB957"
                           : text === 4 &&
-                            render.refund_order === null &&
-                            render.change_order === null
+                            render.refund_orders.length < 1 &&
+                            render.change_orders.length < 1
                           ? "#0070E2"
-                          : text === 4 &&
-                            render.refund_order === null &&
-                            render.change_order !== null
-                          ? "#fb9826"
-                          : text === 4 &&
-                            render.refund_order !== null &&
-                            render.change_order === null
+                          : text === 4 && render.refund_orders.length > 0
                           ? "#FF0000"
+                          : text === 4 && render.change_orders.length > 0
+                          ? "#fb9826"
                           : text === 5
                           ? "#333333"
                           : text === 6
@@ -670,12 +769,12 @@ export default class index extends Component {
                     ) : text === 3 ? (
                       "待出票"
                     ) : text === 4 &&
-                      render.refund_order === null &&
-                      render.change_order === null ? (
+                      render.refund_orders.length < 1 &&
+                      render.change_orders.length < 1 ? (
                       "已出票"
-                    ) : text === 4 && render.refund_order !== null ? (
+                    ) : text === 4 && render.refund_orders.length > 0 ? (
                       "已退票"
-                    ) : text === 4 && render.change_order !== null ? (
+                    ) : text === 4 && render.change_orders.length > 0 ? (
                       "已改签"
                     ) : text === 5 ? (
                       "已取消"
@@ -687,10 +786,16 @@ export default class index extends Component {
                       >
                         <span style={{ cursor: "pointer" }}>占座失败</span>
                       </Popover>
-                    ) : text === 7 && render.refund_order === null ? (
-                      "出票失败"
-                    ) : text === 7 && render.refund_order !== null ? (
+                    ) : text === 7 && render.refund_orders.length > 0 ? (
                       "已退票"
+                    ) : text === 7 ? (
+                      <Popover
+                        content={render.status_remark}
+                        title={false}
+                        trigger="hover"
+                      >
+                        <span style={{ cursor: "pointer" }}>出票失败</span>
+                      </Popover>
                     ) : (
                       text
                     )}
