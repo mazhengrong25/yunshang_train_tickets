@@ -2,7 +2,7 @@
  * @Description: 退票详情
  * @Author: mzr
  * @Date: 2021-06-21 10:38:35
- * @LastEditTime: 2021-07-15 09:33:15
+ * @LastEditTime: 2021-07-15 15:00:27
  * @LastEditors: wish.WuJunLong
  */
 
@@ -543,7 +543,7 @@ export default class index extends Component {
               <Column title="票面价" dataIndex="ticket_price" />
               <Column title="服务费" dataIndex="service_price" />
               <Column title="保险" dataIndex="insurance_price" />
-              <Column title="结算价" dataIndex="total_price" />
+              <Column title="结算价" dataIndex="need_pay_amount" />
             </Table>
           </div>
         </div>

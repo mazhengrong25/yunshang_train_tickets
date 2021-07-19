@@ -2,7 +2,7 @@
  * @Description: 退票详情
  * @Author: mzr
  * @Date: 2021-06-21 16:18:48
- * @LastEditTime: 2021-07-14 17:28:27
+ * @LastEditTime: 2021-07-19 17:55:58
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -222,6 +222,10 @@ export default class index extends Component {
               <p>
                 <span className="header_title">申请时间</span>
                 {this.state.detailData.created_at || "-"}
+              </p>
+              <p>
+                <span className="header_title">电子取票号</span>
+                {this.state.detailData.ticket_number || "-"}
               </p>
               <p>
                 <span className="header_title">退票状态</span>

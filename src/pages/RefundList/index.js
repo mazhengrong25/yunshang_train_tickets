@@ -2,7 +2,7 @@
  * @Description: 退票列表
  * @Author: mzr
  * @Date: 2021-06-21 16:16:31
- * @LastEditTime: 2021-07-14 17:27:33
+ * @LastEditTime: 2021-07-19 17:56:20
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -11,11 +11,25 @@ import "./RefundList.scss";
 
 // import { Base64 } from "js-base64";
 
-import { Button, Pagination, Table, message, Popover } from "antd";
+import {
+  Button,
+  Pagination,
+  Table,
+  message,
+  Popover,
+  Input,
+  Select,
+  DatePicker,
+} from "antd";
 
 // import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
 
+let timeout;
+let currentValue;
+
 const { Column } = Table;
+const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 export default class index extends Component {
   constructor(props) {
@@ -29,7 +43,10 @@ export default class index extends Component {
       orderNumberData: {}, // 订单状态数量
 
       orderSearch: {
+        orderType: "订单号",
         status: "", // 退票状态
+        limit: 20, //类型：String  必有字段  备注：无
+        page: 1, //类型：String  必有字段  备注：无
       },
 
       isSegmentsModal: false, // 取消订单弹窗
@@ -38,19 +55,35 @@ export default class index extends Component {
       isSegmentsModalBtnStatus: false, // 弹窗按钮状态
 
       isAdmin: false, // 管理员状态
+
+      disDataList: [], // 分销商列表
     };
   }
 
   componentDidMount() {
     this.getRefundList();
-    this.getRefundDataCount();
   }
 
   // 获取退票列表
   getRefundList() {
-    let data = this.state.orderSearch;
+    this.setState({
+      refundList: [],
+      tableLoading: true,
+    });
+    let data = {
+      refund_no: this.state.orderSearch.order_no, //类型：String  必有字段  备注：订单号
+      passenger: this.state.orderSearch.passenger,
+      ticket_number: this.state.orderSearch.ticket_number,
+      dis_id: this.state.orderSearch.dis_id, //类型：Number  必有字段  备注：分销商
+      start_date: this.state.orderSearch.start_date, //类型：String  必有字段  备注：生单时间start
+      end_date: this.state.orderSearch.end_date, //类型：String  必有字段  备注：生单时间end
+      limit: this.state.orderSearch.limit, //类型：String  必有字段  备注：无
+      page: this.state.orderSearch.page, //类型：String  必有字段  备注：无
+    };
+    data["status"] = this.state.orderSearch.status ? [this.state.orderSearch.status] : [];
     this.$axios.post("/train/order/refund/list", data).then((res) => {
       if (res.code === 0) {
+        this.getRefundDataCount();
         this.setState({
           refundList: res.data,
           tableLoading: false,
@@ -63,19 +96,112 @@ export default class index extends Component {
     });
   }
 
+  // 组装筛选数据
+  async searchSubmit() {
+    let data = this.state.orderSearch;
+
+    if (data.timeData) {
+      data.start_date = this.$moment(data.timeData[0]).format("YYYY-MM-DD");
+      data.end_date = this.$moment(data.timeData[1]).format("YYYY-MM-DD");
+    } else {
+      data.start_date = "";
+      data.end_date = "";
+    }
+
+    if (data.orderType === "订单号" && data.orderNo) {
+      data.order_no = data.orderNo;
+      data.ticket_number = "";
+    } else if (data.orderType === "取票号" && data.orderNo) {
+      data.ticket_number = data.orderNo;
+      data.order_no = "";
+    } else if (!data.orderNo) {
+      data.ticket_number = "";
+      data.order_no = "";
+    }
+
+    data.page = 1;
+
+    await this.setState({
+      orderSearch: data,
+    });
+
+    await this.getRefundList();
+  }
+
+  // 筛选数据输入框
+  searchInput = (label, val) => {
+    let data = this.state.orderSearch;
+    data[label] = val.target.value;
+
+    this.setState({
+      orderSearch: data,
+    });
+  };
+
+  // 筛选数据选择器
+  searchSelect = (label, val) => {
+    console.log(val);
+    let data = this.state.orderSearch;
+    data[label] = val;
+
+    this.setState({
+      orderSearch: data,
+    });
+  };
+
+  // 分销商搜索
+  handleSearch = (value) => {
+    // if (this.delayedChange(value)) {
+    if (value) {
+      this.fetch(value, (data) => this.setState({ disDataList: data }));
+    } else {
+      this.setState({ disDataList: [] });
+    }
+  };
+
+  fetch(value, callback) {
+    let _that = this;
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+    currentValue = value;
+
+    function fake() {
+      let data = {
+        key: value,
+      };
+      _that.$axios.get("/searchDis", { params: data }).then((res) => {
+        if (currentValue === value) {
+          console.log(res);
+          const data = [];
+          res.forEach((r) => {
+            data.push({
+              value: r.id,
+              text: r.company_name,
+            });
+          });
+          callback(data);
+        }
+      });
+    }
+
+    timeout = setTimeout(fake, 300);
+  }
+
   // 头部状态切换
   async isActiveHeader(val) {
     console.log("头部状态", val);
     let data = this.state.orderSearch;
     data.status =
       val === "退票中"
-        ? "1"
+        ? 1
         : val === "已退票"
-        ? "2"
+        ? 2
         : val === "已取消"
-        ? "3"
+        ? 3
         : val === "退票失败"
-        ? "5"
+        ? 5
         : "";
     await this.setState({
       orderSearch: data,
@@ -105,6 +231,7 @@ export default class index extends Component {
     await this.setState({
       orderSearch: data,
     });
+    await this.getRefundList();
   };
 
   // 跳转退票详情
@@ -155,7 +282,6 @@ export default class index extends Component {
           isSegmentsModal: false,
         });
         this.getRefundList();
-        this.getRefundDataCount();
       } else {
         message.warning(res.msg);
       }
@@ -177,7 +303,7 @@ export default class index extends Component {
               {item}
               <span>
                 {item === "全部"
-                  ? this.state.refundList.total || 0
+                  ? this.state.orderNumberData["total"] || 0
                   : item === "退票中"
                   ? this.state.orderNumberData["apply"] || 0
                   : item === "已退票"
@@ -193,7 +319,111 @@ export default class index extends Component {
         </div>
 
         <div className="order_main">
-          <div className="main_search"></div>
+          <div className="main_search">
+            <div className="search_list">
+              <div className="list_title" style={{ width: 74 }}>
+                乘车人
+              </div>
+              <div className="list_item">
+                <Input
+                  onChange={this.searchInput.bind(this, "passenger")}
+                  allowClear
+                  placeholder="请输入"
+                  value={this.state.orderSearch.passenger}
+                ></Input>
+              </div>
+            </div>
+
+            <div className="search_list">
+              <div className="list_title" style={{ width: 88 }}>
+                退票状态
+              </div>
+              <div className="list_item">
+                <Select
+                  onChange={this.searchSelect.bind(this, "status")}
+                  placeholder="请选择"
+                  value={this.state.orderSearch.status}
+                >
+                  <Option value={""}>全部</Option>
+                  <Option value={1}>退票中</Option>
+                  <Option value={2}>已退票</Option>
+                  <Option value={3}>已取消</Option>
+                  <Option value={5}>退票失败</Option>
+                </Select>
+              </div>
+            </div>
+
+            <div className="search_list">
+              <div className="list_title" style={{ width: 74 }}>
+                <Select
+                  onChange={this.searchSelect.bind(this, "orderType")}
+                  value={this.state.orderSearch.orderType}
+                >
+                  <Option value="订单号">订单号</Option>
+                  <Option value="取票号">取票号</Option>
+                </Select>
+              </div>
+              <div className="list_item">
+                <Input
+                  onChange={this.searchInput.bind(this, "orderNo")}
+                  allowClear
+                  placeholder="订单号/取票号"
+                  value={this.state.orderSearch.orderNo}
+                ></Input>
+              </div>
+            </div>
+
+            <div className="search_list">
+              <div className="list_title" style={{ width: 74 }}>
+                申请时间
+              </div>
+              <div className="list_item" style={{ width: 280 }}>
+                <RangePicker
+                  onChange={this.searchSelect.bind(this, "timeData")}
+                  placeholder={["请选择", "请选择"]}
+                  value={this.state.orderSearch.timeData}
+                />
+              </div>
+            </div>
+
+            {this.state.isAdmin ? (
+              <div className="search_list">
+                <div className="list_title" style={{ width: 74 }}>
+                  分销商
+                </div>
+                <div className="list_item">
+                  <Select
+                    showSearch
+                    value={this.state.orderSearch.dis_id}
+                    placeholder="输入中文进行选择"
+                    defaultActiveFirstOption={false}
+                    showArrow={false}
+                    filterOption={false}
+                    onSearch={this.handleSearch}
+                    onChange={this.searchSelect.bind(this, "dis_id")}
+                    notFoundContent={null}
+                    allowClear
+                  >
+                    {this.state.disDataList.map((d) => (
+                      <Option key={d.value} value={d.value}>
+                        {d.text}
+                      </Option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+
+            <Button
+              className="search_submit"
+              type="primary"
+              onClick={() => this.searchSubmit()}
+            >
+              搜索
+            </Button>
+          </div>
 
           <div className="main_table">
             <Table
@@ -252,7 +482,7 @@ export default class index extends Component {
                 ""
               )}
               <Column
-                title="票号"
+                title="取票号"
                 dataIndex="ticket_number"
                 render={(text) => text || "-"}
               />
@@ -335,7 +565,7 @@ export default class index extends Component {
                 current={this.state.refundList.current_page}
                 total={this.state.refundList.total}
                 pageSizeOptions={[20, 50, 100]}
-                pageSize={20}
+                pageSize={this.state.orderSearch.limit}
                 onChange={this.changePagination}
               />
             </div>

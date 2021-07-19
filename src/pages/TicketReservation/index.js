@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-15 14:11:42
+ * @LastEditTime: 2021-07-16 16:14:46
  * @LastEditors: wish.WuJunLong
  */
 
@@ -805,8 +805,11 @@ export default class index extends Component {
     if (
       this.state.reservationMessage.train &&
       (this.state.reservationMessage.train.type === "G" ||
-        this.state.reservationMessage.train.type === "D") &&
-      this.state.selectCabinList.length < this.state.checkedPassenger.length
+        this.state.reservationMessage.train.type === "D" ||
+        this.state.reservationMessage.train.type === "C") &&
+      (this.showSeatStatus()
+        ? this.state.selectCabinList.length < this.state.checkedPassenger.length
+        : false)
     ) {
       return message.warning("请为所有乘客选座");
     }

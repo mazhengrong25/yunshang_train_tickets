@@ -2,13 +2,22 @@
  * @Description: 改签列表
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 09:26:48
- * @LastEditTime: 2021-07-14 18:31:29
+ * @LastEditTime: 2021-07-19 17:56:52
  * @LastEditors: wish.WuJunLong
  */
 
 import React, { Component } from "react";
 
-import { Button, Pagination, Table, Popover, message } from "antd";
+import {
+  Button,
+  Pagination,
+  Table,
+  Popover,
+  message,
+  Input,
+  Select,
+  DatePicker,
+} from "antd";
 
 import "./ChangeList.scss";
 
@@ -17,33 +26,26 @@ import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退�
 import { Base64 } from "js-base64";
 
 const { Column } = Table;
+const { Option } = Select;
+const { RangePicker } = DatePicker;
+
+let timeout;
+let currentValue;
 
 export default class index extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      orderStatusList: ["全部", "待支付", "改签中", "已改签", "已取消"],
+      orderStatusList: ["全部", "待支付", "改签占座中", "已出票", "已取消"],
       orderStatusActive: "全部",
       orderNumberData: {}, // 订单状态数量
       orderList: [], // 订单列表
 
       orderSearch: {
-        dis_id: "", //类型：Number  必有字段  备注：分销商
-        order_no: "", //类型：String  必有字段  备注：订单号
-        ticket_number: "", //类型：String  必有字段  备注：票号
-        from_station: "", //类型：String  必有字段  备注：出发地
-        to_station: "", //类型：String  必有字段  备注：到达地
-        train_date_start: "", //类型：String  必有字段  备注：出发时间start
-        train_date_end: "", //类型：String  必有字段  备注：出发时间end
-        pay_status: "", //类型：String  必有字段  备注：支付状态：1:未支付 2:已支付 3:已退款 4:已取消
-        pay_type: "", //类型：String  必有字段  备注：支付方式：1:预存款 2：授信支付 3：易宝 4支付宝
-        status: "", //类型：String  必有字段  备注：状态 1 改签中 2待支付 3改签中 4已改签 5已取消 6改签中 7出票失败
-        is_admin_book: "", //类型：String  必有字段  备注：0 否 1 是管理员代订
-        is_settle: "", //类型：String  必有字段  备注：是否结算 1 是 0 否
-        created_at_start: "", //类型：String  必有字段  备注：生单时间start
-        created_at_end: "", //类型：String  必有字段  备注：生单时间end
-        limit: "20", //类型：String  必有字段  备注：无
-        page: "1", //类型：String  必有字段  备注：无
+        orderType: "订单号",
+        status: "",
+        limit: 20, //类型：String  必有字段  备注：无
+        page: 1, //类型：String  必有字段  备注：无
       },
 
       tableLoading: true, //  表格加载
@@ -54,14 +56,37 @@ export default class index extends Component {
       isSegmentsModalBtnStatus: false, // 弹窗按钮状态
 
       isAdmin: false, // 管理员状态
+
+      disDataList: [], // 分销商列表
     };
   }
 
   // 获取改签列表
   getChangeList() {
-    let data = this.state.orderSearch;
+    this.setState({
+      orderList: [],
+      tableLoading: true,
+    });
+    let data = {
+      change_no: this.state.orderSearch.order_no || "", //类型：String  必有字段  备注：订单号
+      passenger: this.state.orderSearch.passenger,
+      ticket_number: this.state.orderSearch.ticket_number,
+      dis_id: this.state.orderSearch.dis_id, //类型：Number  必有字段  备注：分销商
+      created_at_start: this.state.orderSearch.start_date, //类型：String  必有字段  备注：生单时间start
+      created_at_end: this.state.orderSearch.end_date, //类型：String  必有字段  备注：生单时间end
+      limit: this.state.orderSearch.limit, //类型：String  必有字段  备注：无
+      page: this.state.orderSearch.page, //类型：String  必有字段  备注：无
+    };
+
+    data["status"] = this.state.orderSearch.status
+      ? this.state.orderSearch.status === 1
+        ? [1, 3, 6]
+        : [this.state.orderSearch.status]
+      : [];
+
     this.$axios.post("/train/order/change/list", data).then((res) => {
       if (res.code === 0) {
+        this.getChangeDataCount();
         this.setState({
           orderList: res.data,
           tableLoading: false,
@@ -73,19 +98,123 @@ export default class index extends Component {
     });
   }
 
+  // 组装筛选数据
+  async searchSubmit() {
+    let data = this.state.orderSearch;
+
+    if (data.timeData) {
+      data.start_date = this.$moment(data.timeData[0]).format("YYYY-MM-DD");
+      data.end_date = this.$moment(data.timeData[1]).format("YYYY-MM-DD");
+    } else {
+      data.start_date = "";
+      data.end_date = "";
+    }
+
+    if (data.orderType === "订单号" && data.orderNo) {
+      data.order_no = data.orderNo;
+      data.ticket_number = "";
+    } else if (data.orderType === "取票号" && data.orderNo) {
+      data.ticket_number = data.orderNo;
+      data.order_no = "";
+    } else if (!data.orderNo) {
+      data.ticket_number = "";
+      data.order_no = "";
+    }
+
+    data.page = 1;
+
+    await this.setState({
+      orderSearch: data,
+    });
+
+    await this.getChangeList();
+  }
+
+  // 筛选数据输入框
+  searchInput = (label, val) => {
+    let data = this.state.orderSearch;
+    data[label] = val.target.value;
+
+    this.setState({
+      orderSearch: data,
+    });
+  };
+
+  // 筛选数据选择器
+  searchSelect = (label, val) => {
+    console.log(val);
+    let data = this.state.orderSearch;
+    data[label] = val;
+
+    this.setState({
+      orderSearch: data,
+    });
+  };
+
+  // 分销商搜索
+  handleSearch = (value) => {
+    // if (this.delayedChange(value)) {
+    if (value) {
+      this.fetch(value, (data) => this.setState({ disDataList: data }));
+    } else {
+      this.setState({ disDataList: [] });
+    }
+  };
+
+  fetch(value, callback) {
+    let _that = this;
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+    currentValue = value;
+
+    function fake() {
+      let data = {
+        key: value,
+      };
+      _that.$axios.get("/searchDis", { params: data }).then((res) => {
+        if (currentValue === value) {
+          console.log(res);
+          const data = [];
+          res.forEach((r) => {
+            data.push({
+              value: r.id,
+              text: r.company_name,
+            });
+          });
+          callback(data);
+        }
+      });
+    }
+
+    timeout = setTimeout(fake, 300);
+  }
+
+  // 防抖
+  // delayedChange(val) {
+  //   if (/.*[\u4e00-\u9fa5]+.*/.test(val)) {
+  //     return val;
+  //   } else {
+  //     return "";
+  //   }
+  // }
+
   // 头部状态切换
   async isActiveHeader(val) {
     let data = this.state.orderSearch;
     data.status =
       val === "待支付"
         ? 2
-        : val === "改签中"
-        ? [1, 3, 6]
-        : val === "已改签"
+        : val === "改签占座中"
+        ? 1
+        : val === "已出票"
         ? 4
         : val === "已取消"
         ? 5
         : "";
+
+    data.page = 1;
     await this.setState({
       orderSearch: data,
       orderStatusActive: val,
@@ -95,8 +224,7 @@ export default class index extends Component {
 
   // 获取改签列表数量
   getChangeDataCount() {
-    let data = this.state.orderSearch;
-    this.$axios.post("/train/order/change/count", data).then((res) => {
+    this.$axios.get("/train/order/change/count").then((res) => {
       if (res.code === 0) {
         this.setState({
           orderNumberData: res.data,
@@ -115,7 +243,7 @@ export default class index extends Component {
     await this.setState({
       orderSearch: data,
     });
-    await this.getOrderListData();
+    await this.getChangeList();
   };
 
   // 跳转详情页
@@ -166,7 +294,6 @@ export default class index extends Component {
         this.setState({
           isSegmentsModal: false,
         });
-        this.getChangeDataCount();
         this.getChangeList();
       } else {
         message.warning(res.msg);
@@ -183,7 +310,6 @@ export default class index extends Component {
   }
 
   componentDidMount() {
-    this.getChangeDataCount();
     this.getChangeList();
   }
 
@@ -202,15 +328,15 @@ export default class index extends Component {
               {item}
               <span>
                 {item === "全部"
-                  ? this.state.orderList.total || 0
-                  : item === "改签中"
-                  ? this.state.orderNumberData[1] || 0
+                  ? this.state.orderNumberData["total"] || 0
+                  : item === "改签占座中"
+                  ? this.state.orderNumberData["changing"] || 0
                   : item === "待支付"
-                  ? this.state.orderNumberData[2] || 0
-                  : item === "已改签"
-                  ? this.state.orderNumberData[3] || 0
+                  ? this.state.orderNumberData["wait_pay"] || 0
+                  : item === "已出票"
+                  ? this.state.orderNumberData["finish"] || 0
                   : item === "已取消"
-                  ? this.state.orderNumberData[5] || 0
+                  ? this.state.orderNumberData["cancel"] || 0
                   : 0}
               </span>
             </div>
@@ -218,7 +344,111 @@ export default class index extends Component {
         </div>
 
         <div className="order_main">
-          <div className="main_search"></div>
+          <div className="main_search">
+            <div className="search_list">
+              <div className="list_title" style={{ width: 74 }}>
+                乘车人
+              </div>
+              <div className="list_item">
+                <Input
+                  onChange={this.searchInput.bind(this, "passenger")}
+                  allowClear
+                  placeholder="请输入"
+                  value={this.state.orderSearch.passenger}
+                ></Input>
+              </div>
+            </div>
+
+            <div className="search_list">
+              <div className="list_title" style={{ width: 88 }}>
+                改签状态
+              </div>
+              <div className="list_item">
+                <Select
+                  onChange={this.searchSelect.bind(this, "status")}
+                  placeholder="请选择"
+                  value={this.state.orderSearch.status}
+                >
+                  <Option value={""}>全部</Option>
+                  <Option value={1}>改签占座中</Option>
+                  <Option value={2}>待支付</Option>
+                  <Option value={4}>已出票</Option>
+                  <Option value={5}>已取消</Option>
+                </Select>
+              </div>
+            </div>
+
+            <div className="search_list">
+              <div className="list_title" style={{ width: 74 }}>
+                <Select
+                  onChange={this.searchSelect.bind(this, "orderType")}
+                  value={this.state.orderSearch.orderType}
+                >
+                  <Option value="订单号">订单号</Option>
+                  <Option value="取票号">取票号</Option>
+                </Select>
+              </div>
+              <div className="list_item">
+                <Input
+                  onChange={this.searchInput.bind(this, "orderNo")}
+                  allowClear
+                  placeholder="订单号/取票号"
+                  value={this.state.orderSearch.orderNo}
+                ></Input>
+              </div>
+            </div>
+
+            <div className="search_list">
+              <div className="list_title" style={{ width: 74 }}>
+                申请时间
+              </div>
+              <div className="list_item" style={{ width: 280 }}>
+                <RangePicker
+                  onChange={this.searchSelect.bind(this, "timeData")}
+                  placeholder={["请选择", "请选择"]}
+                  value={this.state.orderSearch.timeData}
+                />
+              </div>
+            </div>
+
+            {this.state.isAdmin ? (
+              <div className="search_list">
+                <div className="list_title" style={{ width: 74 }}>
+                  分销商
+                </div>
+                <div className="list_item">
+                  <Select
+                    showSearch
+                    value={this.state.orderSearch.dis_id}
+                    placeholder="输入中文进行选择"
+                    defaultActiveFirstOption={false}
+                    showArrow={false}
+                    filterOption={false}
+                    onSearch={this.handleSearch}
+                    onChange={this.searchSelect.bind(this, "dis_id")}
+                    notFoundContent={null}
+                    allowClear
+                  >
+                    {this.state.disDataList.map((d) => (
+                      <Option key={d.value} value={d.value}>
+                        {d.text}
+                      </Option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+            ) : (
+              ""
+            )}
+
+            <Button
+              className="search_submit"
+              type="primary"
+              onClick={() => this.searchSubmit()}
+            >
+              搜索
+            </Button>
+          </div>
 
           <div className="main_table">
             <Table
@@ -240,7 +470,7 @@ export default class index extends Component {
                     >
                       详
                     </Button>
-                    {render.status === 1 || render.status === 2 ? (
+                    {render.status === 2 ? (
                       <Button
                         size="small"
                         className="option_cancel"
@@ -312,6 +542,11 @@ export default class index extends Component {
                 render={(text) => text || "-"}
               />
               <Column
+                title="取票号"
+                dataIndex="ticket_number"
+                render={(text) => text || "-"}
+              />
+              <Column
                 title="行程时间"
                 render={(text, render) => (
                   <>
@@ -375,12 +610,16 @@ export default class index extends Component {
                     }}
                   >
                     {text === 1 ? (
-                      "改签中"
+                      "改签占座中"
                     ) : text === 2 ? (
                       "待支付"
                     ) : text === 3 ? (
                       "出票中"
                     ) : text === 4 && render.refund_orders.length > 0 ? (
+                      // <>
+                      //   <p style={{ color: "#FB9826" }}>已改签</p>
+                      //   <p style={{ color: "#FF0000" }}>已退票</p>
+                      // </>
                       "已退票"
                     ) : text === 4 ? (
                       "已出票"
@@ -425,7 +664,7 @@ export default class index extends Component {
                 current={this.state.orderList.current_page}
                 total={this.state.orderList.total}
                 pageSizeOptions={[20, 50, 100]}
-                pageSize={20}
+                pageSize={this.state.orderSearch.limit}
                 onChange={this.changePagination}
               />
             </div>

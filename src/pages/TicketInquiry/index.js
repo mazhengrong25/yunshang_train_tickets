@@ -2,13 +2,13 @@
  * @Description: 车票查询
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 11:06:03
- * @LastEditTime: 2021-07-09 17:14:33
+ * @LastEditTime: 2021-07-19 17:32:36
  * @LastEditors: wish.WuJunLong
  */
 
 import React, { Component } from "react";
 
-import { Button, Table, message, Checkbox, DatePicker } from "antd";
+import { Button, Table, message, Checkbox, DatePicker, Input } from "antd";
 
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
 
@@ -34,6 +34,8 @@ export default class index extends Component {
       start: "", // 出发城市
       end: "", // 到达城市
       time: "", // 时间
+
+      ticketNo: "", // 车次
 
       only: false, // 是否只看高铁动车
 
@@ -115,7 +117,6 @@ export default class index extends Component {
     let startStationList = []; // 出发车站列表
     let endStationList = []; // 到达车站列表
     this.$axios.post("/train/query", data).then((res) => {
-      console.log(res);
       if (res.code === 0) {
         // 组装数据key
         let data = res.data;
@@ -129,6 +130,10 @@ export default class index extends Component {
           item["startStationStatus"] = true;
           item["endStationStatus"] = true;
           item["status"] = true;
+
+          item["ticketNoStatus"] = this.state.ticketNo
+            ? item.train.code.indexOf(this.state.ticketNo)
+            : null;
 
           typeList.push(item.train.type + "-" + item.train.type_name);
           startStationList.push(item.station.departure_name);
@@ -151,6 +156,8 @@ export default class index extends Component {
           ticketListLoading: false,
           notTicketList: notData,
         });
+
+        console.log(newData);
 
         if (this.state.only) {
           let newSearchStatus = this.state.searchData;
@@ -183,6 +190,13 @@ export default class index extends Component {
   changeTime = (val) => {
     this.setState({
       time: val,
+    });
+  };
+
+  // 车次
+  changeTicketNo = (val) => {
+    this.setState({
+      ticketNo: val.target.value,
     });
   };
 
@@ -509,6 +523,17 @@ export default class index extends Component {
                 />
               </div>
             </div>
+            <div className="list_item">
+              <div className="item_title">车次</div>
+              <div className="item_input">
+                <Input
+                  allowClear
+                  placeholder="请输入查询车次"
+                  value={this.state.ticketNo}
+                  onChange={this.changeTicketNo}
+                ></Input>
+              </div>
+            </div>
           </div>
 
           <Button
@@ -693,7 +718,8 @@ export default class index extends Component {
                   item.status &&
                   (this.state.searchData.onlyStatus === 1
                     ? item.is_reserve && this.seabedListData(item).length > 0
-                    : true)
+                    : true) &&
+                  (item.ticketNoStatus !== null ? item.ticketNoStatus > -1 : true)
               )}
               loading={this.state.ticketListLoading}
               size="small"

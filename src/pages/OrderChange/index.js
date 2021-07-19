@@ -3,7 +3,7 @@
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
  * @LastEditors: wish.WuJunLong
- * @LastEditTime: 2021-07-15 14:11:22
+ * @LastEditTime: 2021-07-15 15:59:59
  */
 
 import React, { Component } from "react";
@@ -558,13 +558,13 @@ export default class index extends Component {
                   <div className="list_info">
                     <div className="info_status">始</div>
                     <div className="info_date">
-                      {this.$moment(item.departure_time).format("hh:mm")}
+                      {this.$moment(item.departure_time).format("HH:mm")}
                     </div>
                     <div className="info_address">{item.from_city}</div>
                     <div className="info_icon"></div>
                     <div className="info_status">终</div>
                     <div className="info_date">
-                      {this.$moment(item.arrive_time).format("hh:mm")}
+                      {this.$moment(item.arrive_time).format("HH:mm")}
                     </div>
                     <div className="info_address">{item.to_city}</div>
                   </div>

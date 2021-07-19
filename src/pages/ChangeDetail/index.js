@@ -2,7 +2,7 @@
  * @Description: 改签详情
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
- * @LastEditTime: 2021-07-15 11:37:29
+ * @LastEditTime: 2021-07-19 17:55:02
  * @LastEditors: wish.WuJunLong
  */
 
@@ -204,6 +204,10 @@ export default class index extends Component {
                   {this.state.detailData.created_at || "-"}
                 </p>
                 <p>
+                  <span className="header_title">电子取票号</span>
+                  {this.state.detailData.ticket_number || "-"}
+                </p>
+                <p>
                   <span className="header_title">改签状态</span>
                   <span
                     style={{
@@ -226,7 +230,7 @@ export default class index extends Component {
                     }}
                   >
                     {this.state.detailData.status === 1 ? (
-                      "改签中"
+                      "改签占座中"
                     ) : this.state.detailData.status === 2 ? (
                       "待支付"
                     ) : this.state.detailData.status === 3 ? (
@@ -339,8 +343,8 @@ export default class index extends Component {
             </div>
 
             <div className="ticket_box">
-              {this.state.detailData.train_order &&
-                this.state.detailData.train_order.segments.map((item, index) => (
+              {this.state.detailData.segments &&
+                this.state.detailData.segments.map((item, index) => (
                   <div className="box_list" key={index}>
                     <div
                       className="list_type"
@@ -349,7 +353,43 @@ export default class index extends Component {
                         backgroundColor: index === 0 ? "#FFE1E1" : "#DFEEFE",
                       }}
                     >
-                      {index === 0 ? "新车次" : "原车次"}
+                      新车次
+                    </div>
+                    <div className="list_number">{item.train_number}</div>
+                    <div className="list_time">
+                      {this.$moment(item.departure_time).format("YYYY-MM-DD")}
+                      {`（${this.$moment(item.departure_time).format("ddd")}）`}
+                    </div>
+                    <div className="list_info">
+                      <div className="info_status">始</div>
+                      <div className="info_date">
+                        {this.$moment(item.departure_time).format("HH:mm")}
+                      </div>
+                      <div className="info_address">{item.from_city}</div>
+                      <div className="info_icon"></div>
+                      <div className="info_status">终</div>
+                      <div className="info_date">
+                        {this.$moment(item.arrive_time).format("HH:mm")}
+                      </div>
+                      <div className="info_address">{item.to_city}</div>
+                    </div>
+                    <div className="list_cabin">
+                      席别：
+                      {item.seat}
+                    </div>
+                  </div>
+                ))}
+              {this.state.detailData.train_order &&
+                this.state.detailData.train_order.segments.map((item, index) => (
+                  <div className="box_list" key={index}>
+                    <div
+                      className="list_type"
+                      style={{
+                        color: "#0070E2",
+                        backgroundColor: "#DFEEFE",
+                      }}
+                    >
+                      旧车次
                     </div>
                     <div className="list_number">{item.train_number}</div>
                     <div className="list_time">
@@ -436,7 +476,7 @@ export default class index extends Component {
             <Button className="detail_btn" onClick={() => this.sendMessage()}>
               发送短信
             </Button>
-            {this.state.detailData.status === 1 || this.state.detailData.status === 2 ? (
+            {this.state.detailData.status === 2 ? (
               <Button className="detail_btn" onClick={() => this.orderCancel("取消")}>
                 取消订单
               </Button>

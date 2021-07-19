@@ -2,7 +2,7 @@
  * @Description: 订单列表
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-07-15 09:39:50
+ * @LastEditTime: 2021-07-19 11:25:14
  * @LastEditors: wish.WuJunLong
  */
 
@@ -36,7 +36,7 @@ export default class index extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      orderStatusList: ["全部", "占座中", "待支付", "待出票", "已取消"],
+      orderStatusList: ["全部", "占座中", "待支付", "出票中", "已取消"],
       orderStatusActive: "全部",
       orderNumberData: {}, // 订单状态数量
       orderList: [], // 订单列表
@@ -63,7 +63,6 @@ export default class index extends Component {
 
   componentDidMount() {
     this.getOrderListData();
-    this.getOrderNumber();
   }
 
   // 组装筛选数据
@@ -107,7 +106,7 @@ export default class index extends Component {
         : this.state.orderSearch.status === 2
         ? "待支付"
         : this.state.orderSearch.status === 3
-        ? "待出票"
+        ? "出票中"
         : this.state.orderSearch.status === 5
         ? "已取消"
         : "全部";
@@ -145,7 +144,8 @@ export default class index extends Component {
 
   // 分销商搜索
   handleSearch = (value) => {
-    if (this.delayedChange(value)) {
+    // if (this.delayedChange(value)) {
+    if (value) {
       this.fetch(value, (data) => this.setState({ disDataList: data }));
     } else {
       this.setState({ disDataList: [] });
@@ -182,14 +182,14 @@ export default class index extends Component {
     timeout = setTimeout(fake, 300);
   }
 
-  // 防抖
-  delayedChange(val) {
-    if (/.*[\u4e00-\u9fa5]+.*/.test(val)) {
-      return val;
-    } else {
-      return "";
-    }
-  }
+  // // 防抖
+  // delayedChange(val) {
+  //   if (/.*[\u4e00-\u9fa5]+.*/.test(val)) {
+  //     return val;
+  //   } else {
+  //     return "";
+  //   }
+  // }
 
   // 获取订单列表
   getOrderListData() {
@@ -226,6 +226,7 @@ export default class index extends Component {
 
     this.$axios.post("/train/order/list", data).then((res) => {
       if (res.code === 0) {
+        this.getOrderNumber(data);
         this.setState({
           orderList: res.data,
           isAdmin: res.is_admin,
@@ -245,7 +246,7 @@ export default class index extends Component {
         ? 1
         : val === "待支付"
         ? 2
-        : val === "待出票"
+        : val === "出票中"
         ? 3
         : val === "已取消"
         ? 5
@@ -258,32 +259,7 @@ export default class index extends Component {
   }
 
   // 获取订单状态数量
-  getOrderNumber() {
-    let data = {
-      channel: this.state.orderSearch.channel || "", //类型：String  必有字段  备注：渠道1 web 2 miniapp 3 wechat
-      order_no: this.state.orderSearch.order_no || "", //类型：String  必有字段  备注：订单号
-      out_trade_no: this.state.orderSearch.out_trade_no || "", //类型：String  必有字段  备注：外部订单号
-      ticket_number: this.state.orderSearch.ticket_number || "", //类型：String  必有字段  备注：取票号（电子单号）
-      from_station: this.state.orderSearch.from_station || "", //类型：String  必有字段  备注：出发
-      to_station: this.state.orderSearch.to_station || "", //类型：String  必有字段  备注：到达
-      pay_status: this.state.orderSearch.pay_status || "", //类型：String  必有字段  备注：支付状态：1:未支付 2:已支付 3:已退款 4:已取消
-      pay_type: this.state.orderSearch.pay_type || "", //类型：String  必有字段  备注：支付方式：1:预存款 2：授信支付 3：易宝 4支付宝
-      status: this.state.orderSearch.status || "", //类型：String  必有字段  备注：状态 1 占座中 2占座成功待支付 3已支付 4已出票 4已取消 5占座失败 6出票失败
-      pro_center_id: this.state.orderSearch.pro_center_id || "", //类型：String  必有字段  备注：利润中心ID
-      is_admin_book: this.state.orderSearch.is_admin_book || "", //类型：String  必有字段  备注：管理员代订 0否 1是
-      is_settle: this.state.orderSearch.is_settle || "", //类型：String  必有字段  备注：是否结算 1 是 0 否
-      train_date_start: this.state.orderSearch.train_date_start || "", //类型：String  必有字段  备注：起飞开始
-      train_date_end: this.state.orderSearch.train_date_end || "", //类型：String  必有字段  备注：起飞结束
-      pay_time_start: this.state.orderSearch.pay_time_start || "", //类型：String  必有字段  备注：支付开始
-      pay_time_end: this.state.orderSearch.pay_time_end || "", //类型：String  必有字段  备注：支付结束
-      train_number: this.state.orderSearch.train_number || "", //类型：String  必有字段  车次
-      book_user: this.state.orderSearch.book_user || "", //类型：String  必有字段  订票员
-      dis_id: this.state.orderSearch.dis_id || "", //类型：String  必有字段  分销商
-      passenger: this.state.orderSearch.passenger || "", //类型：String  必有字段  乘客
-
-      page: this.state.orderSearch.page,
-      limit: this.state.orderSearch.limit,
-    };
+  getOrderNumber(data) {
     this.$axios.post("/train/order/count", data).then((res) => {
       if (res.code === 0) {
         this.setState({
@@ -372,7 +348,6 @@ export default class index extends Component {
           isSegmentsModal: false,
         });
         this.getOrderListData();
-        this.getOrderNumber();
       } else {
         message.warning(res.msg);
       }
@@ -410,12 +385,12 @@ export default class index extends Component {
               {item}
               <span>
                 {item === "全部"
-                  ? this.state.orderList.total || 0
+                  ? this.state.orderNumberData[0] || 0
                   : item === "占座中"
                   ? this.state.orderNumberData[1] || 0
                   : item === "待支付"
                   ? this.state.orderNumberData[2] || 0
-                  : item === "待出票"
+                  : item === "出票中"
                   ? this.state.orderNumberData[3] || 0
                   : item === "已取消"
                   ? this.state.orderNumberData[5] || 0
@@ -573,7 +548,7 @@ export default class index extends Component {
                   <Option value={""}>全部</Option>
                   <Option value={1}>占座中</Option>
                   <Option value={2}>待支付</Option>
-                  <Option value={3}>待出票</Option>
+                  <Option value={3}>出票中</Option>
                   <Option value={4}>已出票</Option>
                   <Option value={5}>已取消</Option>
                   <Option value={6}>占座失败</Option>
@@ -767,7 +742,7 @@ export default class index extends Component {
                     ) : text === 2 ? (
                       "待支付"
                     ) : text === 3 ? (
-                      "待出票"
+                      "出票中"
                     ) : text === 4 &&
                       render.refund_orders.length < 1 &&
                       render.change_orders.length < 1 ? (
@@ -827,7 +802,7 @@ export default class index extends Component {
                 current={this.state.orderList.current_page}
                 total={this.state.orderList.total}
                 pageSizeOptions={[20, 50, 100]}
-                pageSize={20}
+                pageSize={this.state.orderSearch.limit}
                 onChange={this.changePagination}
               />
             </div>
