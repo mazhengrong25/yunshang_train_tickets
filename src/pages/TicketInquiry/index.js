@@ -2,7 +2,7 @@
  * @Description: 车票查询
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 11:06:03
- * @LastEditTime: 2021-07-19 17:32:36
+ * @LastEditTime: 2021-07-19 17:59:13
  * @LastEditors: wish.WuJunLong
  */
 
@@ -132,7 +132,7 @@ export default class index extends Component {
           item["status"] = true;
 
           item["ticketNoStatus"] = this.state.ticketNo
-            ? item.train.code.indexOf(this.state.ticketNo)
+            ? item.train.code.indexOf(this.state.ticketNo.toUpperCase())
             : null;
 
           typeList.push(item.train.type + "-" + item.train.type_name);
