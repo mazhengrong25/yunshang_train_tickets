@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-07-15 10:55:42
+ * @LastEditTime: 2021-07-20 17:24:35
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -241,7 +241,7 @@ export default class index extends Component {
   // 发送短信
   sendMessage() {
     try {
-      window.parent.addTab("发送信息", `/admin_msg/sendMsg/${this.state.orderNo}`);
+      window.parent.addTab("发送信息", `/msg/sendMsg/${this.state.orderNo}`);
     } catch (e) {
       console.log(e)
     }

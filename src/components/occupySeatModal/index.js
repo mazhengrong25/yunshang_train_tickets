@@ -2,7 +2,7 @@
  * @Description: 占座
  * @Author: mzr
  * @Date: 2021-06-29 14:23:13
- * @LastEditTime: 2021-07-15 14:02:13
+ * @LastEditTime: 2021-07-21 11:17:14
  * @LastEditors: wish.WuJunLong
  *
  * isOccupyNo: '',    订单号
@@ -43,17 +43,21 @@ export default class index extends Component {
     this.props.onRef(this);
   }
 
+  
+// 进度条
   startTime() {
     this.setState({
-      remainingTime: this.$moment().add(this.props.isOccupyStatus, "s"),
-      count: this.props.isOccupyStatus,
+      remainingTime: this.$moment().add(this.props.isOccupyStatus, "s"),  // 倒计时组件计算倒计时时间
+      count: this.props.isOccupyStatus,  // 父级设定随机秒数
     });
+
+    // 进度条开始计算
     timer = setInterval(() => {
       this.setState({
-        count: --this.state.count,
+        count: --this.state.count,  // 每1000毫秒 随机秒数开始减一
         remainingNumber:
           ((this.props.isOccupyStatus - this.state.count) / this.props.isOccupyStatus) *
-          99,
+          99,  // 计算每秒运行距离 百分比
       });
       if (this.state.count < 1) {
         clearInterval(timer);

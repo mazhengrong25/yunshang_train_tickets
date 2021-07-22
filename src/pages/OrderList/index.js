@@ -2,7 +2,7 @@
  * @Description: 订单列表
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-07-19 11:25:14
+ * @LastEditTime: 2021-07-22 10:19:07
  * @LastEditors: wish.WuJunLong
  */
 
@@ -674,13 +674,13 @@ export default class index extends Component {
                 render={(text, render) => (
                   <>
                     <p>
-                      {this.$moment(render.segments[0].departure_time).format(
+                      {this.$moment(render.train_date).format(
                         "YYYY-MM-DD HH:mm"
                       )}
                       -
                     </p>
                     <p>
-                      {this.$moment(render.segments[0].arrive_time).format(
+                      {this.$moment(render.to_train_date).format(
                         "YYYY-MM-DD HH:mm"
                       )}
                     </p>

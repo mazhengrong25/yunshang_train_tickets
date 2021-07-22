@@ -2,7 +2,7 @@
  * @Description: 改签详情
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
- * @LastEditTime: 2021-07-19 17:55:02
+ * @LastEditTime: 2021-07-20 17:24:12
  * @LastEditors: wish.WuJunLong
  */
 
@@ -175,7 +175,7 @@ export default class index extends Component {
   // 发送短信
   sendMessage() {
     try {
-      window.parent.addTab("发送信息", `/admin_msg/sendMsg/${this.state.orderNo}`);
+      window.parent.addTab("发送信息", `/msg/sendMsg/${this.state.orderNo}`);
     } catch (e) {
       console.log(e);
     }

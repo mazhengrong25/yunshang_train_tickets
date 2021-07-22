@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-16 16:14:46
+ * @LastEditTime: 2021-07-20 14:34:47
  * @LastEditors: wish.WuJunLong
  */
 
@@ -785,6 +785,14 @@ export default class index extends Component {
     });
   };
 
+  // 判断字段是否为空值或空格
+  isNull(str) {
+    if (str === "") return true;
+    var regu = "^[ ]+$";
+    var re = new RegExp(regu);
+    return re.test(str);
+  }
+
   // 创建订单 / 核验乘客信息
   createOrder() {
     let data = this.state.checkedPassenger;
@@ -793,12 +801,16 @@ export default class index extends Component {
     // let checkStatus = false;
 
     for (let i = 0; i < data.length; i++) {
-      if (!data[i].name || !data[i].cert_no || !data[i].phone) {
+      if (
+        this.isNull(data[i].name) ||
+        this.isNull(data[i].cert_no) ||
+        this.isNull(data[i].phone)
+      ) {
         return message.warning("请完善乘客信息后创建订单");
       }
     }
 
-    if (!contact.name || !contact.phone) {
+    if (this.isNull(contact.name) || this.isNull(contact.phone)) {
       return message.warning("请完善联系人信息后创建订单");
     }
 
@@ -861,8 +873,13 @@ export default class index extends Component {
             checkedPassenger: newData,
             createOrderStatus: true,
           });
-        } else {
-          message.warning(`${res.msg}：${res.data.name} ${res.data.status}`);
+        } else if(res.code === 2){
+          Modal.error({
+            title: '核验失败',
+            content: res.msg,
+          });
+        }else {
+          message.warning(`${res.msg}：${res.data.name} ${res.data.status}`,5);
           let verifyData;
           for (let i = 0; i < checkPassenger.length; i++) {
             if (checkPassenger[i].name === res.data.name) {
@@ -1648,7 +1665,7 @@ export default class index extends Component {
                         </div>
                       </div>
 
-                      {item.verify_status !== 1 && item.name && item.cert_no ? (
+                      {item.verify_status !== 1 && !this.isNull(item.name) && !this.isNull(item.cert_no) && !this.isNull(item.phone) ? (
                         <Button
                           className="is_verify_status"
                           type="link"
