@@ -2,7 +2,7 @@
  * @Description: 订单列表
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-07-22 10:19:07
+ * @LastEditTime: 2021-07-23 13:47:08
  * @LastEditors: wish.WuJunLong
  */
 
@@ -182,7 +182,7 @@ export default class index extends Component {
     timeout = setTimeout(fake, 300);
   }
 
-  // // 防抖
+  // 防抖
   // delayedChange(val) {
   //   if (/.*[\u4e00-\u9fa5]+.*/.test(val)) {
   //     return val;
@@ -368,6 +368,63 @@ export default class index extends Component {
       pathname: "/orderRefund/" + val.order_no,
       query: { changeType: true },
     });
+  }
+
+  // 表单下载
+  downloadExcel() {
+    let data = {
+      channel: this.state.orderSearch.channel || "", //类型：String  必有字段  备注：渠道1 web 2 miniapp 3 wechat
+      order_no: this.state.orderSearch.order_no || "", //类型：String  必有字段  备注：订单号
+      out_trade_no: this.state.orderSearch.out_trade_no || "", //类型：String  必有字段  备注：外部订单号
+      ticket_number: this.state.orderSearch.ticket_number || "", //类型：String  必有字段  备注：取票号（电子单号）
+      from_station: this.state.orderSearch.from_station || "", //类型：String  必有字段  备注：出发
+      to_station: this.state.orderSearch.to_station || "", //类型：String  必有字段  备注：到达
+      pay_status: this.state.orderSearch.pay_status || "", //类型：String  必有字段  备注：支付状态：1:未支付 2:已支付 3:已退款 4:已取消
+      pay_type: this.state.orderSearch.pay_type || "", //类型：String  必有字段  备注：支付方式：1:预存款 2：授信支付 3：易宝 4支付宝
+      status: this.state.orderSearch.status || "", //类型：String  必有字段  备注：状态 1 占座中 2占座成功待支付 3已支付 4已出票 4已取消 5占座失败 6出票失败
+      pro_center_id: this.state.orderSearch.pro_center_id || "", //类型：String  必有字段  备注：利润中心ID
+      is_admin_book: this.state.orderSearch.is_admin_book || "", //类型：String  必有字段  备注：管理员代订 0否 1是
+      is_settle: this.state.orderSearch.is_settle || "", //类型：String  必有字段  备注：是否结算 1 是 0 否
+      train_date_start: this.state.orderSearch.train_date_start || "", //类型：String  必有字段  备注：起飞开始
+      train_date_end: this.state.orderSearch.train_date_end || "", //类型：String  必有字段  备注：起飞结束
+      pay_time_start: this.state.orderSearch.pay_time_start || "", //类型：String  必有字段  备注：支付开始
+      pay_time_end: this.state.orderSearch.pay_time_end || "", //类型：String  必有字段  备注：支付结束
+      train_number: this.state.orderSearch.train_number || "", //类型：String  必有字段  车次
+      book_user: this.state.orderSearch.book_user || "", //类型：String  必有字段  订票员
+      dis_id: this.state.orderSearch.dis_id || "", //类型：String  必有字段  分销商
+      passenger: this.state.orderSearch.passenger || "", //类型：String  必有字段  乘客
+
+      page: this.state.orderSearch.page,
+      limit: this.state.orderSearch.limit,
+
+      order_type: "1", //类型：String  必有字段  备注：1正常单 2改签单 3退票单
+      download: "1", //类型：String  必有字段  备注：默认1
+      report_type: "5",
+    };
+
+    /*
+     *功能： 模拟form表单的提交
+     *参数： URL 跳转地址 PARAMTERS 参数 function Post(URL, PARAMTERS ,Type){
+     */
+    //创建form表单
+    var temp_form = document.createElement("form");
+    temp_form.action = "/log/train/order_excel";
+    //如需当前窗口打开，form的target属性要设置为'_self'
+    temp_form.target = "_blank";
+    temp_form.method = "post";
+    temp_form.style.display = "none";
+    //添加参数
+    for (var item in data) {
+      var opt = document.createElement("input");
+      if (data[item]) {
+        opt.name = item;
+        opt.value = data[item];
+        temp_form.appendChild(opt);
+      }
+    }
+    document.body.appendChild(temp_form);
+    //提交数据
+    temp_form.submit();
   }
 
   render() {
@@ -564,6 +621,14 @@ export default class index extends Component {
             >
               搜索
             </Button>
+
+            <Button
+              className="search_submit"
+              type="primary"
+              onClick={() => this.downloadExcel()}
+            >
+              表单下载
+            </Button>
           </div>
 
           <div className="main_table">
@@ -673,17 +738,8 @@ export default class index extends Component {
                 title="行程时间"
                 render={(text, render) => (
                   <>
-                    <p>
-                      {this.$moment(render.train_date).format(
-                        "YYYY-MM-DD HH:mm"
-                      )}
-                      -
-                    </p>
-                    <p>
-                      {this.$moment(render.to_train_date).format(
-                        "YYYY-MM-DD HH:mm"
-                      )}
-                    </p>
+                    <p>{this.$moment(render.train_date).format("YYYY-MM-DD HH:mm")}-</p>
+                    <p>{this.$moment(render.to_train_date).format("YYYY-MM-DD HH:mm")}</p>
                   </>
                 )}
               />

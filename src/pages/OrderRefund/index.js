@@ -2,7 +2,7 @@
  * @Description: 退票详情
  * @Author: mzr
  * @Date: 2021-06-21 10:38:35
- * @LastEditTime: 2021-07-15 15:00:27
+ * @LastEditTime: 2021-07-23 09:24:18
  * @LastEditors: wish.WuJunLong
  */
 
@@ -305,7 +305,7 @@ export default class index extends Component {
                   ) : this.state.detailData.status === 2 ? (
                     "待支付"
                   ) : this.state.detailData.status === 3 ? (
-                    "待出票"
+                    "出票中"
                   ) : this.state.detailData.status === 4 &&
                     this.state.detailData.refund_orders.length < 1 ? (
                     "已出票"

@@ -2,7 +2,7 @@
  * @Description: axios封装
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 10:51:06
- * @LastEditTime: 2021-07-12 11:05:27
+ * @LastEditTime: 2021-07-23 11:49:05
  * @LastEditors: wish.WuJunLong
  */
 
@@ -60,9 +60,9 @@ service.interceptors.request.use(
 // response拦截器
 service.interceptors.response.use(
   (response) => {
-    // console.log(response)
+    console.log(response)
     // response.config.url = '/web/train'+response.config.url
-    if (typeof response.data === "string") {
+    if (!response.config.type && typeof response.data === "string") {
       Modal.destroyAll();
       return Modal.info({
         title: "警告",

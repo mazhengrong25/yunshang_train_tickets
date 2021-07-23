@@ -302,7 +302,7 @@ export default class index extends Component {
                     ) : this.state.detailData.status === 2 ? (
                       "待支付"
                     ) : this.state.detailData.status === 3 ? (
-                      "待出票"
+                      "出票中"
                     ) : this.state.detailData.status === 4 &&
                       this.state.detailData.refund_orders.length < 1 &&
                       this.state.detailData.change_orders.length < 1 ? (

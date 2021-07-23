@@ -2,7 +2,7 @@
  * @Description: 改签列表
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 09:26:48
- * @LastEditTime: 2021-07-19 17:56:52
+ * @LastEditTime: 2021-07-23 13:46:19
  * @LastEditors: wish.WuJunLong
  */
 
@@ -309,6 +309,51 @@ export default class index extends Component {
     });
   }
 
+  // 表单下载
+  downloadExcel() {
+    let data = {
+      change_no: this.state.orderSearch.order_no || "", //类型：String  必有字段  备注：订单号
+      passenger: this.state.orderSearch.passenger,
+      ticket_number: this.state.orderSearch.ticket_number,
+      dis_id: this.state.orderSearch.dis_id, //类型：Number  必有字段  备注：分销商
+      created_at_start: this.state.orderSearch.start_date, //类型：String  必有字段  备注：生单时间start
+      created_at_end: this.state.orderSearch.end_date, //类型：String  必有字段  备注：生单时间end
+
+      page: this.state.orderSearch.page,
+      limit: this.state.orderSearch.limit,
+
+      order_type: "2", //类型：String  必有字段  备注：1正常单 2改签单 3退票单
+      download: "1", //类型：String  必有字段  备注：默认1
+      report_type: "6", //类型：String  必有字段  备注：5正常单列表 6改签单列表 7退票单列表
+    };
+
+    /*
+     *功能： 模拟form表单的提交
+     *参数： URL 跳转地址 PARAMTERS 参数 function Post(URL, PARAMTERS ,Type){
+     */
+    //创建form表单
+    var temp_form = document.createElement("form");
+    temp_form.action = "/log/train/order_excel";
+    //如需当前窗口打开，form的target属性要设置为'_self'
+    temp_form.target = "_blank";
+    temp_form.method = "post";
+    temp_form.style.display = "none";
+    //添加参数
+    for (var item in data) {
+      var opt = document.createElement("input");
+      console.log(data[item]);
+      if (data[item]) {
+        opt.name = item;
+        opt.value = data[item];
+        temp_form.appendChild(opt);
+      }
+    }
+    console.log(temp_form);
+    document.body.appendChild(temp_form);
+    //提交数据
+    temp_form.submit();
+  }
+
   componentDidMount() {
     this.getChangeList();
   }
@@ -447,6 +492,14 @@ export default class index extends Component {
               onClick={() => this.searchSubmit()}
             >
               搜索
+            </Button>
+
+            <Button
+              className="search_submit"
+              type="primary"
+              onClick={() => this.downloadExcel()}
+            >
+              表单下载
             </Button>
           </div>
 
