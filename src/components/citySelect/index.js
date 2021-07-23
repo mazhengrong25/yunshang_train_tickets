@@ -2,7 +2,7 @@
  * @Description: 城市选择组件
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 13:52:05
- * @LastEditTime: 2021-07-13 15:11:51
+ * @LastEditTime: 2021-07-23 16:25:44
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -86,7 +86,9 @@ export default class index extends Component {
 
   // 组装城市信息
   sortingCityData() {
-    let cities = stationData.split("@"); // 拆分城市数据
+    let cities = window.station_names
+      ? window.station_names.split("@")
+      : stationData.split("@"); // 拆分城市数据
 
     let city_name_character = [...Array(26).keys()].map((i) =>
       String.fromCharCode(i + 65)
