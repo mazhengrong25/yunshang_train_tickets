@@ -2,13 +2,13 @@
  * @Description: 车票查询
  * @Author: wish.WuJunLong
  * @Date: 2021-05-06 11:06:03
- * @LastEditTime: 2021-07-19 17:59:13
+ * @LastEditTime: 2021-07-26 10:00:11
  * @LastEditors: wish.WuJunLong
  */
 
 import React, { Component } from "react";
 
-import { Button, Table, message, Checkbox, DatePicker, Input } from "antd";
+import { Button, Table, message, Checkbox, DatePicker, Input, Popover } from "antd";
 
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
 
@@ -495,6 +495,11 @@ export default class index extends Component {
     }
   }
 
+  // 获取上下铺数据
+  getBedData(val) {
+    return val.code === "3" || val.code === "4";
+  }
+
   render() {
     return (
       <div className="ticket_inquiry">
@@ -830,12 +835,51 @@ export default class index extends Component {
                       <>
                         <div className="seabed">
                           {this.seabedListData(render) &&
-                            this.seabedListData(render).map((item, index) => (
-                              <p className="table_list" key={index}>
-                                <span>{item.name}</span>{" "}
-                                {item.price ? <>&yen;{item.price}</> : "--"}
-                              </p>
-                            ))}
+                            this.seabedListData(render).map((item, index) =>
+                              this.getBedData(item) ? (
+                                <Popover
+                                  getPopupContainer={(triggerNode) =>
+                                    triggerNode.parentNode
+                                  }
+                                  placement="bottom"
+                                  content={
+                                    <div className="bed_message">
+                                      <p className="bed_title">铺位信息</p>
+                                      <p class="bed_list">
+                                        {item.name}上：&yen;{item.price}
+                                      </p>
+                                      {item.Z ? (
+                                        <p class="bed_list">
+                                          {item.Z.name}：&yen;{item.Z.price}
+                                        </p>
+                                      ) : (
+                                        ""
+                                      )}
+                                      {item.X ? (
+                                        <p class="bed_list">
+                                          {item.X.name}：&yen;{item.X.price}
+                                        </p>
+                                      ) : (
+                                        ""
+                                      )}
+                                    </div>
+                                  }
+                                  key={index}
+                                  trigger="click"
+                                >
+                                  <p className="table_list" style={{ cursor: "pointer" }}>
+                                    <span>{item.name}</span>{" "}
+                                    {item.price ? <>&yen;{item.price}</> : "--"}
+                                    <span className="table_btn"></span>
+                                  </p>
+                                </Popover>
+                              ) : (
+                                <p className="table_list" key={index}>
+                                  <span>{item.name}</span>{" "}
+                                  {item.price ? <>&yen;{item.price}</> : "--"}
+                                </p>
+                              )
+                            )}
                         </div>
                         <div className="not_train_note">{render.train.note}</div>
                       </>
@@ -877,7 +921,15 @@ export default class index extends Component {
                         {this.seabedListData(render) &&
                           this.seabedListData(render).map((item, index) => (
                             <p className="price table_list" key={index}>
-                              {item.price ? <>&yen;{item.price}</> : "--"}
+                              {item.price ? (
+                                <>
+                                  &yen;
+                                  {Number(item.price) +
+                                    (item.service_fee ? Number(item.service_fee) : 0)}
+                                </>
+                              ) : (
+                                "--"
+                              )}
                             </p>
                           ))}
                       </>

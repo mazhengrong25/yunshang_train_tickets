@@ -2,7 +2,7 @@
  * @Description: 改签列表
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 09:26:48
- * @LastEditTime: 2021-07-23 13:46:19
+ * @LastEditTime: 2021-07-26 15:10:25
  * @LastEditors: wish.WuJunLong
  */
 
@@ -499,7 +499,7 @@ export default class index extends Component {
               type="primary"
               onClick={() => this.downloadExcel()}
             >
-              表单下载
+              报表下载
             </Button>
           </div>
 
@@ -546,7 +546,9 @@ export default class index extends Component {
                     ) : (
                       ""
                     )}
-                    {(render.status === 4 || render.status === 7) &&
+                    {(render.status === 4 
+                    // || render.status === 7
+                    ) &&
                     render.refund_orders.length < 1 ? (
                       <Button
                         size="small"
@@ -606,7 +608,7 @@ export default class index extends Component {
                     <p>
                       {render.segments[0]
                         ? this.$moment(render.segments[0].departure_time).format(
-                            "YY-MM-DD HH:mm"
+                            "YYYY-MM-DD HH:mm"
                           )
                         : ""}
                       -
@@ -614,7 +616,7 @@ export default class index extends Component {
                     <p>
                       {render.segments[0]
                         ? this.$moment(render.segments[0].arrive_time).format(
-                            "YY-MM-DD HH:mm"
+                            "YYYY-MM-DD HH:mm"
                           )
                         : ""}
                     </p>
@@ -648,17 +650,17 @@ export default class index extends Component {
                           : text === 2
                           ? "#FF0000"
                           : text === 3
-                          ? "#5AB957"
+                          ? "#0070E2"
                           : text === 4 && render.refund_orders.length > 0
                           ? "#FF0000"
                           : text === 4
-                          ? "#0070E2"
+                          ? "#5AB957"
                           : text === 5
                           ? "#333333"
                           : text === 6
                           ? "#FF0000"
                           : text === 7
-                          ? "#FF0000"
+                          ? "#333333"
                           : "#333333",
                     }}
                   >
@@ -708,7 +710,7 @@ export default class index extends Component {
               <Column
                 title="申请时间"
                 dataIndex="created_at"
-                render={(text) => this.$moment(text).format("YY-MM-DD HH:mm") || "-"}
+                render={(text) => this.$moment(text).format("YYYY-MM-DD HH:mm") || "-"}
               />
             </Table>
 

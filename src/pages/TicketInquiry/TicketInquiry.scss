@@ -12,7 +12,7 @@
       .list_item {
         display: inline-flex;
         align-items: center;
-        &:not(:last-child){
+        &:not(:last-child) {
           margin-right: 32px;
         }
         .item_title {
@@ -188,18 +188,36 @@
     }
     .ticket_table {
       // 折叠样式
-      .not_ticket_list_info{
+      .not_ticket_list_info {
         font-size: 14px;
         text-align: center;
         height: 60px;
         line-height: 60px;
-        border-bottom: 1px solid #f0f0f0 ;
-        .ant-btn{
+        border-bottom: 1px solid #f0f0f0;
+        .ant-btn {
           font-size: 14px;
           color: rgb(30, 139, 249);
         }
       }
 
+      // 铺位信息
+      .bed_message {
+        width: 150px;
+        .bed_title {
+          font-size: 14px;
+          font-weight: bold;
+          color: #000000;
+          margin-bottom: 12px;
+        }
+        .bed_list {
+          font-size: 12px;
+          font-weight: 400;
+          color: #333333;
+          &:not(:last-child) {
+            margin-bottom: 12px;
+          }
+        }
+      }
 
       // antd 表格样式修改
       .ant-table {
@@ -298,7 +316,8 @@
         font-size: 14px;
         font-weight: bold;
         color: #000000;
-        span {
+        position: relative;
+        span:not(.table_btn) {
           text-align: justify;
           text-align-last: justify;
           text-justify: inter-ideograph; /*兼容ie*/
@@ -307,6 +326,15 @@
           font-weight: 400;
           color: #000000;
           min-width: 36px;
+        }
+        .table_btn {
+          width: 9px;
+          height: 5px;
+          background: url("../../static/open_icon.png") no-repeat center center;
+          background-size: contain;
+          display: inline-block;
+          margin-left: 5px;
+          vertical-align: middle;
         }
       }
       .not_train_note {

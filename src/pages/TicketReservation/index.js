@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-20 14:34:47
+ * @LastEditTime: 2021-07-26 11:02:16
  * @LastEditors: wish.WuJunLong
  */
 
@@ -873,13 +873,13 @@ export default class index extends Component {
             checkedPassenger: newData,
             createOrderStatus: true,
           });
-        } else if(res.code === 2){
+        } else if (res.code === 2) {
           Modal.error({
-            title: '核验失败',
+            title: "核验失败",
             content: res.msg,
           });
-        }else {
-          message.warning(`${res.msg}：${res.data.name} ${res.data.status}`,5);
+        } else {
+          message.warning(`${res.msg}：${res.data.name} ${res.data.status}`, 5);
           let verifyData;
           for (let i = 0; i < checkPassenger.length; i++) {
             if (checkPassenger[i].name === res.data.name) {
@@ -1574,10 +1574,11 @@ export default class index extends Component {
                         <div className="item_input">
                           <Dropdown
                             visible={this.state.passengerSelectStatus === index}
-                            overlay={() => (
-                              <Menu>
-                                {this.state.passengerList.data &&
-                                  this.state.passengerList.data.map((pitem, pindex) => (
+                            getPopupContainer={(triggerNode) => triggerNode.parentNode}
+                            overlay={() =>
+                              this.state.passengerList.data ? (
+                                <Menu>
+                                  {this.state.passengerList.data.map((pitem, pindex) => (
                                     <Menu.Item
                                       style={{
                                         display:
@@ -1593,8 +1594,11 @@ export default class index extends Component {
                                       姓名:{pitem.name}, 身份证号:{pitem.cert_no}
                                     </Menu.Item>
                                   ))}
-                              </Menu>
-                            )}
+                                </Menu>
+                              ) : (
+                                ""
+                              )
+                            }
                           >
                             <Input
                               value={item.name}
@@ -1665,7 +1669,10 @@ export default class index extends Component {
                         </div>
                       </div>
 
-                      {item.verify_status !== 1 && !this.isNull(item.name) && !this.isNull(item.cert_no) && !this.isNull(item.phone) ? (
+                      {item.verify_status !== 1 &&
+                      !this.isNull(item.name) &&
+                      !this.isNull(item.cert_no) &&
+                      !this.isNull(item.phone) ? (
                         <Button
                           className="is_verify_status"
                           type="link"
@@ -1965,7 +1972,7 @@ export default class index extends Component {
           <div className="not_cabin_select">
             <img src={WarningIcon} alt="警告图标"></img>
             <span>温馨提示：</span>
-            卧铺价格暂显示下铺全价，网上购票铺位随机，实际以占座后铺位价格为准，如有差价则1-3工作日原路退回
+            卧铺价格暂显示上铺全价，网上购票铺位随机，实际以占座后铺位价格为准，如有差价则1-3工作日原路退回
           </div>
         ) : (
           ""

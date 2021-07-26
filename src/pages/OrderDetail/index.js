@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-07-20 17:24:35
+ * @LastEditTime: 2021-07-26 15:09:39
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -277,11 +277,11 @@ export default class index extends Component {
                           : this.state.detailData.status === 2
                           ? "#FF0000"
                           : this.state.detailData.status === 3
-                          ? "#5AB957"
+                          ? "#0070E2"
                           : this.state.detailData.status === 4 &&
                             this.state.detailData.refund_orders.length < 1 &&
                             this.state.detailData.change_orders.length < 1
-                          ? "#0070E2"
+                          ? "#5AB957"
                           : this.state.detailData.status === 4 &&
                             this.state.detailData.refund_orders.length > 0
                           ? "#FF0000"
@@ -293,7 +293,7 @@ export default class index extends Component {
                           : this.state.detailData.status === 6
                           ? "#FF0000"
                           : this.state.detailData.status === 7
-                          ? "#FF0000"
+                          ? "#333333"
                           : "#333333",
                     }}
                   >
@@ -648,7 +648,9 @@ export default class index extends Component {
             ) : (
               ""
             )}
-            {this.state.detailData.status === 4 || this.state.detailData.status === 7 ? (
+            {this.state.detailData.status === 4
+            //  || this.state.detailData.status === 7
+              ? (
               <Button className="detail_btn" onClick={() => this.jumpRefundPage()}>
                 退票
               </Button>

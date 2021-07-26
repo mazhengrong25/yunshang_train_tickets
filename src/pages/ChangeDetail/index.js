@@ -2,7 +2,7 @@
  * @Description: 改签详情
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
- * @LastEditTime: 2021-07-20 17:24:12
+ * @LastEditTime: 2021-07-26 15:11:10
  * @LastEditors: wish.WuJunLong
  */
 
@@ -217,15 +217,15 @@ export default class index extends Component {
                           : this.state.detailData.status === 2
                           ? "#FF0000"
                           : this.state.detailData.status === 3
-                          ? "#5AB957"
-                          : this.state.detailData.status === 4
                           ? "#0070E2"
+                          : this.state.detailData.status === 4
+                          ? "#5AB957"
                           : this.state.detailData.status === 5
                           ? "#333333"
                           : this.state.detailData.status === 6
                           ? "#FF0000"
                           : this.state.detailData.status === 7
-                          ? "#FF0000"
+                          ? "#333333"
                           : "#333333",
                     }}
                   >
@@ -483,7 +483,9 @@ export default class index extends Component {
             ) : (
               ""
             )}
-            {this.state.detailData.status === 4 || this.state.detailData.status === 7 ? (
+            {this.state.detailData.status === 4
+            //  || this.state.detailData.status === 7 
+             ? (
               <Button className="detail_btn" onClick={() => this.jumpRefundPage()}>
                 退票
               </Button>

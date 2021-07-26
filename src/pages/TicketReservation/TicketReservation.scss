@@ -309,6 +309,9 @@
             }
           }
           &.adt_name {
+            .ant-dropdown-menu{
+              padding: 0 !important;
+            }
             .item_input {
               position: relative;
               .remark_icon {

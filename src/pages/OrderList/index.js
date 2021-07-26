@@ -2,7 +2,7 @@
  * @Description: 订单列表
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-07-23 13:47:08
+ * @LastEditTime: 2021-07-26 15:09:18
  * @LastEditors: wish.WuJunLong
  */
 
@@ -627,7 +627,7 @@ export default class index extends Component {
               type="primary"
               onClick={() => this.downloadExcel()}
             >
-              表单下载
+              报表下载
             </Button>
           </div>
 
@@ -674,7 +674,9 @@ export default class index extends Component {
                     ) : (
                       ""
                     )}
-                    {render.status === 4 || render.status === 7 ? (
+                    {render.status === 4 
+                    // || render.status === 7
+                     ? (
                       <Button
                         size="small"
                         className="option_refund"
@@ -775,11 +777,11 @@ export default class index extends Component {
                           : text === 2
                           ? "#FF0000"
                           : text === 3
-                          ? "#5AB957"
+                          ? "#0070E2"
                           : text === 4 &&
                             render.refund_orders.length < 1 &&
                             render.change_orders.length < 1
-                          ? "#0070E2"
+                          ? "#5AB957"
                           : text === 4 && render.refund_orders.length > 0
                           ? "#FF0000"
                           : text === 4 && render.change_orders.length > 0
@@ -789,7 +791,7 @@ export default class index extends Component {
                           : text === 6
                           ? "#FF0000"
                           : text === 7
-                          ? "#FF0000"
+                          ? "#333333"
                           : "#333333",
                     }}
                   >

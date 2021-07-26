@@ -2,7 +2,7 @@
  * @Description: 退票列表
  * @Author: mzr
  * @Date: 2021-06-21 16:16:31
- * @LastEditTime: 2021-07-23 13:46:38
+ * @LastEditTime: 2021-07-23 16:49:57
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -472,7 +472,7 @@ export default class index extends Component {
               type="primary"
               onClick={() => this.downloadExcel()}
             >
-              表单下载
+              报表下载
             </Button>
           </div>
 
@@ -565,7 +565,7 @@ export default class index extends Component {
               <Column
                 title="退款时间"
                 dataIndex="refund_time"
-                render={(text) => text || "-"}
+                render={(text) => this.$moment(text).format("YYYY-MM-DD HH:mm") || "-"}
               />
               <Column
                 title="退票状态"
@@ -607,7 +607,7 @@ export default class index extends Component {
               <Column
                 title="申请时间"
                 dataIndex="created_at"
-                render={(text) => this.$moment(text).format("YY-MM-DD HH:mm") || "-"}
+                render={(text) => this.$moment(text).format("YYYY-MM-DD HH:mm") || "-"}
               />
             </Table>
 
