@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-07-26 15:09:39
+ * @LastEditTime: 2021-07-28 09:40:32
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -243,7 +243,7 @@ export default class index extends Component {
     try {
       window.parent.addTab("发送信息", `/msg/sendMsg/${this.state.orderNo}`);
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   }
 
@@ -498,6 +498,10 @@ export default class index extends Component {
                               <p className="list_title">座位</p>
                               {item.seat_info}
                             </div>
+                            <div className="list_item">
+                              <p className="list_title">检票口</p>
+                              {item.ticket_entrance}
+                            </div>
                           </>
                         ) : (
                           ""
@@ -524,6 +528,10 @@ export default class index extends Component {
                             <div className="list_item">
                               <p className="list_title">座位</p>
                               {item.seat_info}
+                            </div>
+                            <div className="list_item">
+                              <p className="list_title">检票口</p>
+                              {item.ticket_entrance}
                             </div>
                           </>
                         ) : (
@@ -640,7 +648,9 @@ export default class index extends Component {
             ) : (
               ""
             )}
-            <Button className="detail_btn" onClick={() => this.sendMessage()}>发送短信</Button>
+            <Button className="detail_btn" onClick={() => this.sendMessage()}>
+              发送短信
+            </Button>
             {this.state.detailData.status === 1 || this.state.detailData.status === 2 ? (
               <Button className="detail_btn" onClick={() => this.orderCancel("取消")}>
                 取消订单
@@ -648,9 +658,8 @@ export default class index extends Component {
             ) : (
               ""
             )}
-            {this.state.detailData.status === 4
-            //  || this.state.detailData.status === 7
-              ? (
+            {this.state.detailData.status === 4 ? (
+              //  || this.state.detailData.status === 7
               <Button className="detail_btn" onClick={() => this.jumpRefundPage()}>
                 退票
               </Button>

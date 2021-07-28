@@ -2,7 +2,7 @@
  * @Description: 改签详情
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
- * @LastEditTime: 2021-07-26 15:11:10
+ * @LastEditTime: 2021-07-28 09:44:02
  * @LastEditors: wish.WuJunLong
  */
 
@@ -319,6 +319,11 @@ export default class index extends Component {
                 <Column
                   title="座位号"
                   dataIndex="seat_info"
+                  render={(text) => (text ? text : "-")}
+                />
+                <Column
+                  title="检票口"
+                  dataIndex="ticket_entrance"
                   render={(text) => (text ? text : "-")}
                 />
                 <Column title="原票号" dataIndex="old_ticket_no" />

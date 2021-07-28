@@ -2,7 +2,7 @@
  * @Description: 改签列表
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 09:26:48
- * @LastEditTime: 2021-07-26 15:10:25
+ * @LastEditTime: 2021-07-28 10:15:25
  * @LastEditors: wish.WuJunLong
  */
 
@@ -624,7 +624,7 @@ export default class index extends Component {
                 )}
               />
               <Column
-                title="改签费用"
+                title="新票面价"
                 dataIndex="ticket_price"
                 render={(text) => text || "-"}
               />

@@ -3,7 +3,7 @@
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
  * @LastEditors: wish.WuJunLong
- * @LastEditTime: 2021-07-15 15:59:59
+ * @LastEditTime: 2021-07-28 09:34:18
  */
 
 import React, { Component } from "react";
@@ -703,10 +703,11 @@ export default class index extends Component {
           onCancel={() => this.setState({ newTicketModal: false })}
           destroyOnClose={true}
           footer={false}
-          width={1000}
+          width={'100%'}
           getContainer={false}
           maskClosable={false}
           keyboard={false}
+          wrapClassName="new_ticket_modal"
         >
           <div className="new_ticket_box">
             <TicketSearchPage
