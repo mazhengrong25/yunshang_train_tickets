@@ -2,7 +2,7 @@
  * @Description: 订单列表
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-07-26 15:09:18
+ * @LastEditTime: 2021-07-29 16:48:34
  * @LastEditors: wish.WuJunLong
  */
 
@@ -21,6 +21,8 @@ import {
 
 import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
 
+import { DownloadOutlined } from "@ant-design/icons";
+
 import "./OrderList.scss";
 
 import { Base64 } from "js-base64";
@@ -36,7 +38,7 @@ export default class index extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      orderStatusList: ["全部", "占座中", "待支付", "出票中", "已取消"],
+      orderStatusList: ["全部", "待支付", "出票中", "已出票", "已取消"],
       orderStatusActive: "全部",
       orderNumberData: {}, // 订单状态数量
       orderList: [], // 订单列表
@@ -101,12 +103,12 @@ export default class index extends Component {
     data.page = 1;
 
     let status =
-      this.state.orderSearch.status === 1
-        ? "占座中"
-        : this.state.orderSearch.status === 2
+      this.state.orderSearch.status === 2
         ? "待支付"
         : this.state.orderSearch.status === 3
         ? "出票中"
+        : this.state.orderSearch.status === 4
+        ? "已出票"
         : this.state.orderSearch.status === 5
         ? "已取消"
         : "全部";
@@ -242,12 +244,12 @@ export default class index extends Component {
   async isActiveHeader(val) {
     let data = this.state.orderSearch;
     data.status =
-      val === "占座中"
-        ? 1
-        : val === "待支付"
+      val === "待支付"
         ? 2
         : val === "出票中"
         ? 3
+        : val === "已出票"
+        ? 4
         : val === "已取消"
         ? 5
         : "";
@@ -443,12 +445,12 @@ export default class index extends Component {
               <span>
                 {item === "全部"
                   ? this.state.orderNumberData[0] || 0
-                  : item === "占座中"
-                  ? this.state.orderNumberData[1] || 0
                   : item === "待支付"
                   ? this.state.orderNumberData[2] || 0
                   : item === "出票中"
                   ? this.state.orderNumberData[3] || 0
+                  : item === "已出票"
+                  ? this.state.orderNumberData[4] || 0
                   : item === "已取消"
                   ? this.state.orderNumberData[5] || 0
                   : 0}
@@ -623,10 +625,11 @@ export default class index extends Component {
             </Button>
 
             <Button
-              className="search_submit"
-              type="primary"
+              style={{ marginBottom: 16, color: "#0070e2" }}
+              type="link"
               onClick={() => this.downloadExcel()}
             >
+              <DownloadOutlined />
               报表下载
             </Button>
           </div>
@@ -674,9 +677,8 @@ export default class index extends Component {
                     ) : (
                       ""
                     )}
-                    {render.status === 4 
-                    // || render.status === 7
-                     ? (
+                    {render.status === 4 ? (
+                      // || render.status === 7
                       <Button
                         size="small"
                         className="option_refund"

@@ -2,7 +2,7 @@
  * @Description: 改签列表
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 09:26:48
- * @LastEditTime: 2021-07-28 10:15:25
+ * @LastEditTime: 2021-07-29 16:37:06
  * @LastEditors: wish.WuJunLong
  */
 
@@ -18,6 +18,8 @@ import {
   Select,
   DatePicker,
 } from "antd";
+
+import { DownloadOutlined } from '@ant-design/icons';
 
 import "./ChangeList.scss";
 
@@ -495,10 +497,11 @@ export default class index extends Component {
             </Button>
 
             <Button
-              className="search_submit"
-              type="primary"
+              style={{marginBottom: 16,color:'#0070e2'}}
+              type="link"
               onClick={() => this.downloadExcel()}
             >
+              <DownloadOutlined />
               报表下载
             </Button>
           </div>

@@ -2,7 +2,7 @@
  * @Description: 退票列表
  * @Author: mzr
  * @Date: 2021-06-21 16:16:31
- * @LastEditTime: 2021-07-23 16:49:57
+ * @LastEditTime: 2021-07-29 16:37:46
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -23,6 +23,9 @@ import {
 } from "antd";
 
 // import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
+
+import { DownloadOutlined } from '@ant-design/icons';
+
 
 let timeout;
 let currentValue;
@@ -468,10 +471,11 @@ export default class index extends Component {
             </Button>
 
             <Button
-              className="search_submit"
-              type="primary"
+              style={{marginBottom: 16,color:'#0070e2'}}
+              type="link"
               onClick={() => this.downloadExcel()}
             >
+              <DownloadOutlined />
               报表下载
             </Button>
           </div>
