@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-07-28 09:40:32
+ * @LastEditTime: 2021-07-30 10:25:21
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -651,7 +651,7 @@ export default class index extends Component {
             <Button className="detail_btn" onClick={() => this.sendMessage()}>
               发送短信
             </Button>
-            {this.state.detailData.status === 1 || this.state.detailData.status === 2 ? (
+            {this.state.detailData.status === 2 ? (
               <Button className="detail_btn" onClick={() => this.orderCancel("取消")}>
                 取消订单
               </Button>

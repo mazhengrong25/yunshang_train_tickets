@@ -2,7 +2,7 @@
  * @Description: 订单列表
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-07-29 16:48:34
+ * @LastEditTime: 2021-07-30 10:24:00
  * @LastEditors: wish.WuJunLong
  */
 
@@ -654,7 +654,7 @@ export default class index extends Component {
                     >
                       详
                     </Button>
-                    {render.status === 1 || render.status === 2 ? (
+                    {render.status === 2 ? (
                       <Button
                         size="small"
                         className="option_cancel"

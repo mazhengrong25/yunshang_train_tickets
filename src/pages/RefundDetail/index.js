@@ -2,7 +2,7 @@
  * @Description: 退票详情
  * @Author: mzr
  * @Date: 2021-06-21 16:18:48
- * @LastEditTime: 2021-07-19 17:55:58
+ * @LastEditTime: 2021-07-30 10:53:57
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -410,7 +410,37 @@ export default class index extends Component {
               <Column
                 title="乘车人"
                 dataIndex="PassengerName"
-                render={(text) => text || "-"}
+                render={(text, render) => (
+                  <>
+                    {text}
+                    <span
+                      style={{
+                        fontSize: 12,
+                        marginLeft: 5,
+                        color:
+                          render.refund_status === 1
+                            ? "#0070E2"
+                            : render.refund_status === 2
+                            ? "#5AB957"
+                            : render.refund_status === 3
+                            ? "#FF0000"
+                            : "#333333",
+                      }}
+                    >
+                      [
+                      {render.refund_status === 1
+                        ? "申请中"
+                        : render.refund_status === 2
+                        ? "成功"
+                        : render.refund_status === 3
+                        ? "失败"
+                        : render.refund_status === 4
+                        ? "已取消"
+                        : render.refund_status}
+                      ]
+                    </span>
+                  </>
+                )}
               />
               <Column
                 title="乘客类型"

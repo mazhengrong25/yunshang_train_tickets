@@ -2,7 +2,7 @@
  * @Description: 退票列表
  * @Author: mzr
  * @Date: 2021-06-21 16:16:31
- * @LastEditTime: 2021-07-29 16:37:46
+ * @LastEditTime: 2021-07-30 10:48:01
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -24,8 +24,7 @@ import {
 
 // import CancelOrderModal from "../../components/cancelOrderModal"; // 取消/退票确认弹窗
 
-import { DownloadOutlined } from '@ant-design/icons';
-
+import { DownloadOutlined } from "@ant-design/icons";
 
 let timeout;
 let currentValue;
@@ -471,7 +470,7 @@ export default class index extends Component {
             </Button>
 
             <Button
-              style={{marginBottom: 16,color:'#0070e2'}}
+              style={{ marginBottom: 16, color: "#0070e2" }}
               type="link"
               onClick={() => this.downloadExcel()}
             >
@@ -526,6 +525,7 @@ export default class index extends Component {
                   );
                 }}
               />
+
               {this.state.isAdmin ? (
                 <Column
                   title="分销商"
@@ -536,6 +536,12 @@ export default class index extends Component {
               ) : (
                 ""
               )}
+              <Column
+                title="行程"
+                render={(render) => {
+                  return `${render.from_station}-${render.to_station}`;
+                }}
+              />
               <Column
                 title="取票号"
                 dataIndex="ticket_number"
@@ -569,7 +575,9 @@ export default class index extends Component {
               <Column
                 title="退款时间"
                 dataIndex="refund_time"
-                render={(text) => this.$moment(text).format("YYYY-MM-DD HH:mm") || "-"}
+                render={(text) =>
+                  text ? this.$moment(text).format("YYYY-MM-DD HH:mm") : "-"
+                }
               />
               <Column
                 title="退票状态"
