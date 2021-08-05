@@ -2,7 +2,7 @@
  * @Description: 改签详情
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
- * @LastEditTime: 2021-07-28 09:44:02
+ * @LastEditTime: 2021-08-05 10:15:24
  * @LastEditors: wish.WuJunLong
  */
 
@@ -196,6 +196,12 @@ export default class index extends Component {
 
               <div className="left_box">
                 <p>
+                  <span className="header_title">分销商</span>
+                  {this.state.detailData.distributor_user
+                    ? this.state.detailData.distributor_user.company_name
+                    : "-"}
+                </p>
+                <p>
                   <span className="header_title">申请人</span>
                   {this.state.detailData.book_user || "-"}
                 </p>
@@ -218,12 +224,16 @@ export default class index extends Component {
                           ? "#FF0000"
                           : this.state.detailData.status === 3
                           ? "#0070E2"
-                          : this.state.detailData.status === 4
+                          : this.state.detailData.status === 4 &&
+                            this.state.detailData.offline_refund_number === 0
                           ? "#5AB957"
+                          : this.state.detailData.status === 4 &&
+                            this.state.detailData.offline_refund_number > 0
+                          ? "#FB8226"
                           : this.state.detailData.status === 5
                           ? "#333333"
                           : this.state.detailData.status === 6
-                          ? "#FF0000"
+                          ? "#999"
                           : this.state.detailData.status === 7
                           ? "#333333"
                           : "#333333",
@@ -235,8 +245,12 @@ export default class index extends Component {
                       "待支付"
                     ) : this.state.detailData.status === 3 ? (
                       "出票中"
-                    ) : this.state.detailData.status === 4 ? (
+                    ) : this.state.detailData.status === 4 &&
+                      this.state.detailData.offline_refund_number === 0 ? (
                       "已出票"
+                    ) : this.state.detailData.status === 4 &&
+                      this.state.detailData.offline_refund_number > 0 ? (
+                      "线下退票"
                     ) : this.state.detailData.status === 5 ? (
                       "已取消"
                     ) : this.state.detailData.status === 6 ? (
@@ -260,6 +274,23 @@ export default class index extends Component {
                     )}
                   </span>
                 </p>
+
+                {this.state.detailData.pay_status === 2 ? (
+                  <p>
+                    <span className="header_title">支付方式</span>
+                    {this.state.detailData.pay_type === 1
+                      ? "预存款"
+                      : this.state.detailData.pay_type === 2
+                      ? "授信支付"
+                      : this.state.detailData.pay_type === 3
+                      ? "易宝"
+                      : this.state.detailData.pay_type === 4
+                      ? "支付宝"
+                      : "-"}
+                  </p>
+                ) : (
+                  ""
+                )}
               </div>
             </div>
 
@@ -488,9 +519,8 @@ export default class index extends Component {
             ) : (
               ""
             )}
-            {this.state.detailData.status === 4
-            //  || this.state.detailData.status === 7 
-             ? (
+            {this.state.detailData.status === 4 ? (
+              //  || this.state.detailData.status === 7
               <Button className="detail_btn" onClick={() => this.jumpRefundPage()}>
                 退票
               </Button>

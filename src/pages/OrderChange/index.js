@@ -3,7 +3,7 @@
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 10:49:01
  * @LastEditors: wish.WuJunLong
- * @LastEditTime: 2021-07-28 09:34:18
+ * @LastEditTime: 2021-08-05 13:58:43
  */
 
 import React, { Component } from "react";
@@ -47,6 +47,9 @@ export default class index extends Component {
       isOccupyNo: "",
       isOccupyModal: false,
       isOccupyStatus: 0,
+
+
+      passengerChangeStatus: false, // 乘客可否改签状态 根据乘客状态是否退票或线下退票
     };
   }
 
@@ -88,6 +91,10 @@ export default class index extends Component {
           refundPassenger,
           apiData.passengers
         );
+
+        // apiData.passengers.forEach(item => {
+
+        // })
 
         this.setState({
           detailData: apiData,
@@ -343,6 +350,9 @@ export default class index extends Component {
         if (record.status) {
           return { disabled: true };
         }
+        if (record.offline_refund > 0) {
+          return { disabled: true };
+        }
       },
     };
     return (
@@ -387,7 +397,7 @@ export default class index extends Component {
                         : this.state.detailData.status === 5
                         ? "#333333"
                         : this.state.detailData.status === 6
-                        ? "#FF0000"
+                        ? "#999"
                         : this.state.detailData.status === 7
                         ? "#FF0000"
                         : "#333333",
@@ -508,6 +518,18 @@ export default class index extends Component {
                           : render.status === "refund"
                           ? "已退票"
                           : "订单状态已修改"}
+                      </div>
+                    ) : (
+                      ""
+                    )}
+                    {render.offline_refund > 0 ? (
+                      <div
+                        className="passenger_status_mask"
+                        style={{
+                          color: "#FB8226",
+                        }}
+                      >
+                        线下退票
                       </div>
                     ) : (
                       ""

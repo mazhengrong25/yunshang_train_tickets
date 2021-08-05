@@ -2,7 +2,7 @@
  * @Description: 订单详情
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 14:19:39
- * @LastEditTime: 2021-07-30 10:25:21
+ * @LastEditTime: 2021-08-05 10:31:59
  * @LastEditors: wish.WuJunLong
  */
 import React, { Component } from "react";
@@ -260,6 +260,13 @@ export default class index extends Component {
 
               <div className="left_box">
                 <p>
+                  <span className="header_title">分销商</span>
+                  {this.state.detailData.distributor_user
+                    ? this.state.detailData.distributor_user.company_name
+                    : "-"}
+                </p>
+
+                <p>
                   <span className="header_title">订票员</span>
                   {this.state.detailData.book_user || "-"}
                 </p>
@@ -280,8 +287,14 @@ export default class index extends Component {
                           ? "#0070E2"
                           : this.state.detailData.status === 4 &&
                             this.state.detailData.refund_orders.length < 1 &&
-                            this.state.detailData.change_orders.length < 1
+                            this.state.detailData.change_orders.length < 1 &&
+                            this.state.detailData.offline_refund_number === 0
                           ? "#5AB957"
+                          : this.state.detailData.status === 4 &&
+                            this.state.detailData.refund_orders.length < 1 &&
+                            this.state.detailData.change_orders.length < 1 &&
+                            this.state.detailData.offline_refund_number > 0
+                          ? "#FB8226"
                           : this.state.detailData.status === 4 &&
                             this.state.detailData.refund_orders.length > 0
                           ? "#FF0000"
@@ -291,7 +304,7 @@ export default class index extends Component {
                           : this.state.detailData.status === 5
                           ? "#333333"
                           : this.state.detailData.status === 6
-                          ? "#FF0000"
+                          ? "#999"
                           : this.state.detailData.status === 7
                           ? "#333333"
                           : "#333333",
@@ -305,11 +318,27 @@ export default class index extends Component {
                       "出票中"
                     ) : this.state.detailData.status === 4 &&
                       this.state.detailData.refund_orders.length < 1 &&
-                      this.state.detailData.change_orders.length < 1 ? (
+                      this.state.detailData.change_orders.length < 1 &&
+                      this.state.detailData.offline_refund_number === 0 ? (
                       "已出票"
                     ) : this.state.detailData.status === 4 &&
+                      this.state.detailData.refund_orders.length < 1 &&
+                      this.state.detailData.change_orders.length < 1 &&
+                      this.state.detailData.offline_refund_number > 0 ? (
+                      "线下退票"
+                    ) : this.state.detailData.status === 4 &&
                       this.state.detailData.refund_orders.length > 0 ? (
-                      "已退票"
+                      <>
+                        已退票
+                        {this.state.detailData.offline_refund_number > 0 ? (
+                          <>
+                            <span style={{ color: "#000" }}> / </span>
+                            <span style={{ color: "#FB8226" }}>线下退票</span>
+                          </>
+                        ) : (
+                          ""
+                        )}
+                      </>
                     ) : this.state.detailData.status === 4 &&
                       this.state.detailData.change_orders.length > 0 ? (
                       "已改签"
@@ -339,6 +368,23 @@ export default class index extends Component {
                     )}
                   </span>
                 </p>
+
+                {this.state.detailData.pay_status === 2 ? (
+                  <p>
+                    <span className="header_title">支付方式</span>
+                    {this.state.detailData.pay_type === 1
+                      ? "预存款"
+                      : this.state.detailData.pay_type === 2
+                      ? "授信支付"
+                      : this.state.detailData.pay_type === 3
+                      ? "易宝"
+                      : this.state.detailData.pay_type === 4
+                      ? "支付宝"
+                      : "-"}
+                  </p>
+                ) : (
+                  ""
+                )}
               </div>
             </div>
 

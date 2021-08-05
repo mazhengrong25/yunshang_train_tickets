@@ -2,7 +2,7 @@
  * @Description: 火车票预定页面
  * @Author: wish.WuJunLong
  * @Date: 2021-05-12 16:21:59
- * @LastEditTime: 2021-07-26 11:02:16
+ * @LastEditTime: 2021-08-02 15:28:29
  * @LastEditors: wish.WuJunLong
  */
 
@@ -1647,7 +1647,7 @@ export default class index extends Component {
 
                       <div className="list_item">
                         <div className="item_title">证件号</div>
-                        <div className="item_input">
+                        <div className="item_input" style={{ width: 180 }}>
                           <Input
                             onChange={this.editPassenger.bind(this, index, "cert_no")}
                             value={item.cert_no}
@@ -1659,7 +1659,7 @@ export default class index extends Component {
 
                       <div className="list_item">
                         <div className="item_title">手机号</div>
-                        <div className="item_input">
+                        <div className="item_input" style={{ width: 130 }}>
                           <Input
                             onChange={this.editPassenger.bind(this, index, "phone")}
                             value={item.phone}

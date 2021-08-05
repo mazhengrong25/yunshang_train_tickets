@@ -2,7 +2,7 @@
  * @Description: 退票详情
  * @Author: mzr
  * @Date: 2021-06-21 10:38:35
- * @LastEditTime: 2021-07-23 09:24:18
+ * @LastEditTime: 2021-08-05 10:35:11
  * @LastEditors: wish.WuJunLong
  */
 
@@ -252,6 +252,9 @@ export default class index extends Component {
         if (record.status) {
           return { disabled: true };
         }
+        if (record.offline_refund > 0) {
+          return { disabled: true };
+        }
       },
     };
     return (
@@ -282,19 +285,24 @@ export default class index extends Component {
                         : this.state.detailData.status === 2
                         ? "#FF0000"
                         : this.state.detailData.status === 3
+                        ? "#0070E2"
+                        : this.state.detailData.status === 4 &&
+                          this.state.detailData.refund_orders.length < 1 &&
+                          this.state.detailData.offline_refund_number === 0
                         ? "#5AB957"
                         : this.state.detailData.status === 4 &&
-                          this.state.detailData.refund_orders.length < 1 
-                        ? "#0070E2"
+                          this.state.detailData.refund_orders.length < 1 &&
+                          this.state.detailData.offline_refund_number > 0
+                        ? "#FB8226"
                         : this.state.detailData.status === 4 &&
                           this.state.detailData.refund_orders.length > 0
                         ? "#FF0000"
-                        : this.state.detailData.status === 4 
+                        : this.state.detailData.status === 4
                         ? "#fb9826"
                         : this.state.detailData.status === 5
                         ? "#333333"
                         : this.state.detailData.status === 6
-                        ? "#FF0000"
+                        ? "#999"
                         : this.state.detailData.status === 7
                         ? "#FF0000"
                         : "#333333",
@@ -307,11 +315,26 @@ export default class index extends Component {
                   ) : this.state.detailData.status === 3 ? (
                     "出票中"
                   ) : this.state.detailData.status === 4 &&
-                    this.state.detailData.refund_orders.length < 1 ? (
+                    this.state.detailData.refund_orders.length < 1 &&
+                    this.state.detailData.offline_refund_number === 0 ? (
                     "已出票"
                   ) : this.state.detailData.status === 4 &&
+                    this.state.detailData.refund_orders.length < 1 &&
+                    this.state.detailData.offline_refund_number > 0 ? (
+                    "线下退票"
+                  ) : this.state.detailData.status === 4 &&
                     this.state.detailData.refund_orders.length > 0 ? (
-                    "已退票"
+                    <>
+                      已退票
+                      {this.state.detailData.offline_refund_number > 0 ? (
+                        <>
+                          <span style={{ color: "#000" }}> / </span>
+                          <span style={{ color: "#FB8226" }}>线下退票</span>
+                        </>
+                      ) : (
+                        ""
+                      )}
+                    </>
                   ) : this.state.detailData.status === 4 ? (
                     "已改签"
                   ) : this.state.detailData.status === 5 ? (
@@ -524,6 +547,18 @@ export default class index extends Component {
                           : render.status === "refund"
                           ? "已退票"
                           : "订单状态已修改"}
+                      </div>
+                    ) : (
+                      ""
+                    )}
+                    {render.offline_refund > 0 ? (
+                      <div
+                        className="passenger_status_mask"
+                        style={{
+                          color: "#FB8226",
+                        }}
+                      >
+                        线下退票
                       </div>
                     ) : (
                       ""

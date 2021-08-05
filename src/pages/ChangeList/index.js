@@ -2,7 +2,7 @@
  * @Description: 改签列表
  * @Author: wish.WuJunLong
  * @Date: 2021-06-08 09:26:48
- * @LastEditTime: 2021-07-29 16:37:06
+ * @LastEditTime: 2021-08-05 10:30:34
  * @LastEditors: wish.WuJunLong
  */
 
@@ -19,7 +19,7 @@ import {
   DatePicker,
 } from "antd";
 
-import { DownloadOutlined } from '@ant-design/icons';
+import { DownloadOutlined } from "@ant-design/icons";
 
 import "./ChangeList.scss";
 
@@ -497,7 +497,7 @@ export default class index extends Component {
             </Button>
 
             <Button
-              style={{marginBottom: 16,color:'#0070e2'}}
+              style={{ marginBottom: 16, color: "#0070e2" }}
               type="link"
               onClick={() => this.downloadExcel()}
             >
@@ -549,9 +549,8 @@ export default class index extends Component {
                     ) : (
                       ""
                     )}
-                    {(render.status === 4 
+                    {render.status === 4 &&
                     // || render.status === 7
-                    ) &&
                     render.refund_orders.length < 1 ? (
                       <Button
                         size="small"
@@ -656,12 +655,14 @@ export default class index extends Component {
                           ? "#0070E2"
                           : text === 4 && render.refund_orders.length > 0
                           ? "#FF0000"
+                          : text === 4 && render.offline_refund_number > 0
+                          ? "#FB8226"
                           : text === 4
                           ? "#5AB957"
                           : text === 5
                           ? "#333333"
                           : text === 6
-                          ? "#FF0000"
+                          ? "#999"
                           : text === 7
                           ? "#333333"
                           : "#333333",
@@ -678,9 +679,21 @@ export default class index extends Component {
                       //   <p style={{ color: "#FB9826" }}>已改签</p>
                       //   <p style={{ color: "#FF0000" }}>已退票</p>
                       // </>
-                      "已退票"
-                    ) : text === 4 ? (
+                      <>
+                        已退票
+                        {render.offline_refund_number > 0 ? (
+                          <>
+                            <span style={{ color: "#000" }}> / </span>
+                            <span style={{ color: "#FB8226" }}>线下退票</span>
+                          </>
+                        ) : (
+                          ""
+                        )}
+                      </>
+                    ) : text === 4 && render.offline_refund_number === 0 ? (
                       "已出票"
+                    ) : text === 4 && render.offline_refund_number > 0 ? (
+                      "线下退票"
                     ) : text === 5 ? (
                       "已取消"
                     ) : text === 6 ? (

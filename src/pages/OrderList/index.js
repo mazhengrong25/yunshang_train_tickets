@@ -2,7 +2,7 @@
  * @Description: 订单列表
  * @Author: wish.WuJunLong
  * @Date: 2021-05-25 13:46:24
- * @LastEditTime: 2021-07-30 10:24:00
+ * @LastEditTime: 2021-08-05 10:30:05
  * @LastEditors: wish.WuJunLong
  */
 
@@ -782,6 +782,11 @@ export default class index extends Component {
                           ? "#0070E2"
                           : text === 4 &&
                             render.refund_orders.length < 1 &&
+                            render.change_orders.length < 1 &&
+                            render.offline_refund_number > 0
+                          ? "#FF0000"
+                          : text === 4 &&
+                            render.refund_orders.length < 1 &&
                             render.change_orders.length < 1
                           ? "#5AB957"
                           : text === 4 && render.refund_orders.length > 0
@@ -805,10 +810,25 @@ export default class index extends Component {
                       "出票中"
                     ) : text === 4 &&
                       render.refund_orders.length < 1 &&
+                      render.change_orders.length < 1 &&
+                      render.offline_refund_number > 0 ? (
+                      "线下退票"
+                    ) : text === 4 &&
+                      render.refund_orders.length < 1 &&
                       render.change_orders.length < 1 ? (
                       "已出票"
                     ) : text === 4 && render.refund_orders.length > 0 ? (
-                      "已退票"
+                      <>
+                        已退票
+                        {render.offline_refund_number > 0 ? (
+                          <>
+                            <span style={{ color: "#000" }}> / </span>
+                            <span style={{ color: "#FB8226" }}>线下退票</span>
+                          </>
+                        ) : (
+                          ""
+                        )}
+                      </>
                     ) : text === 4 && render.change_orders.length > 0 ? (
                       "已改签"
                     ) : text === 5 ? (
